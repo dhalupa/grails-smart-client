@@ -1,0 +1,2 @@
+grails-smart-client
+===================
