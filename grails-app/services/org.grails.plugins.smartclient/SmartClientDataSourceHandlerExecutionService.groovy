@@ -95,11 +95,12 @@ class SmartClientDataSourceHandlerExecutionService {
 
     private remoteMethodHandler = { service, request ->
         Class clazz = AopProxyUtils.ultimateTargetClass(service)
-        Method m = ReflectionUtils.findMethod(clazz, request.operationId, Object.class)
+        def paramsMeta = request.data.meta.collect { Class.forName(it) } as Class[]
+        Method m = ReflectionUtils.findMethod(clazz, request.operationId, paramsMeta)
         if (m) {
             if (m.getAnnotation(Remote) || clazz.getAnnotation(Remote)) {
-                m.getParameterAnnotations().each { println it[0].value }
-                def value = service.invokeMethod(request.operationId, [request.data] as Object[])
+                def paramsValue = request.data.values.collect { it } as Object[]
+                def value = service.invokeMethod(request.operationId, paramsValue)
                 return renderDataUpdateResponse([retValue: value])
             } else {
                 throw new RuntimeException("Method ${clazz.getName()}#${request.operationId} is not exposed for remote invocation")

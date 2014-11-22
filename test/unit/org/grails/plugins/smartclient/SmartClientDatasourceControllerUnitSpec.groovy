@@ -3,6 +3,7 @@ package org.grails.plugins.smartclient
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
+import org.grails.plugins.smartclient.annotation.NamedParam
 import org.grails.plugins.smartclient.annotation.Progress
 import org.grails.plugins.smartclient.annotation.Remote
 import spock.lang.Specification
@@ -103,14 +104,14 @@ class InvoiceDataSourceHandler {
 @Remote
 class ExposedInvoiceService {
 
-    def doSomething(criteria) {
+    def doSomething() {
         return [some: 'value1']
     }
 }
 
 class InvoiceService {
     @Remote
-    def doSomething(criteria) {
+    def doSomething(@NamedParam('client') String client, @NamedParam('ledger') Integer ledger, param) {
         return [some: 'value']
     }
 

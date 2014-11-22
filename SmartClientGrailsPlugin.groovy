@@ -1,9 +1,14 @@
 import org.codehaus.groovy.grails.commons.GrailsClass
-import org.grails.plugins.smartclient.DataSourceHandlerArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsServiceClass
+import org.grails.plugins.smartclient.DataSourceHandlerArtefactHandler
+import org.grails.plugins.smartclient.annotation.NamedParam
+import org.grails.plugins.smartclient.annotation.Remote
+
+import java.lang.reflect.Method;
 
 class SmartClientGrailsPlugin {
     def packaging = "binary"
-    def version = "0.1.1-SNAPSHOT"
+    def version = "0.1.2-SNAPSHOT"
     def grailsVersion = "1.3.7 > *"
     def dependsOn = [:]
     def observe = ["services"]
@@ -41,6 +46,10 @@ This is the plugin which supports operation of smartclient datasources
                 }
             }
         }
+        def remoteApi = new File('web-app/js/sc-remote-api.js')
+        def w = remoteApi.newWriter()
+        w << application.mainContext.smartClientDataSourceDefinitionService.remoteApi
+        w.close()
     }
 
     def documentation = "http://grails.org/plugin/smartclient"
@@ -52,6 +61,15 @@ This is the plugin which supports operation of smartclient datasources
                 bean.autowire = "byName"
             }
         }
+    }
+
+    def doWithApplicationContext = { appCtx ->
+        def remoteApi = new File('web-app/js/sc-remote-api.js')
+        def w = remoteApi.newWriter()
+        w << appCtx.smartClientDataSourceDefinitionService.remoteApi
+        w.close()
+
+
     }
 
 

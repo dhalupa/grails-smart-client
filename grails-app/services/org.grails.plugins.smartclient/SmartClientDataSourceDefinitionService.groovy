@@ -1,10 +1,12 @@
 package org.grails.plugins.smartclient
 
 import grails.converters.JSON
+import groovy.text.SimpleTemplateEngine
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.GrailsServiceClass
+import org.grails.plugins.smartclient.annotation.NamedParam
 import org.grails.plugins.smartclient.annotation.Progress
 import org.grails.plugins.smartclient.annotation.Remote
 import org.grails.plugins.smartclient.builder.FieldsDefinitionBuilder
@@ -12,6 +14,8 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.context.NoSuchMessageException
 
 import java.beans.Introspector
+import java.lang.annotation.Annotation
+import java.lang.reflect.Method
 
 /**
  * Service responsible to build definition of datasources from registered datasource artefacts and exposed service methods
@@ -32,13 +36,28 @@ class SmartClientDataSourceDefinitionService {
 
     static def SYSTEM_PROPS = ['version', 'created']
     static def REMOTE_DEF = '''
-isc.defineClass('RemoteMethod').addClassProperties({invoke: function (method, data, callback)
- {var parts = method.split('.');
- if (callback)
- {isc.DataSource.get(parts[0]).performCustomOperation(parts[1], data, function () {var data = arguments[1][0].retValue;
- for (var p in data) {if (data[p] === void 0) {delete data[p];}}callback.call(this, data);})
- } else {isc.DataSource.get(parts[0]).performCustomOperation(parts[1], data);}}
-});'''
+isc.defineClass('RemoteMethod').addClassProperties({
+invoke: function (method, data, callback) {
+var parts = method.split('.');
+var ds = isc.DataSource.get(parts[0]);
+if (ds) {if (callback) {ds.performCustomOperation(parts[1], data, function () {
+var data = arguments[1][0].retValue;
+for (var p in data) {
+if (data[p] === void 0) { delete data[p];}}
+callback.call(this, data);})} else {ds.performCustomOperation(parts[1], data);}
+} else {alert('DataSource ' + parts[0] + ' can not be found!')}}});'''.replace("\n", "").replace("\r", "")
+
+    private static def remoteApiTemplateText = 'var rmt=new function(){return { $services }}();'
+
+    private static def serviceTemplateText = '${serviceName}: { ${functions} }'
+
+    private static def functionTemplateText = '''
+$functionName: function ($params , callback) {
+var params = {values: [$params],meta: [$paramsMeta]};
+isc.RemoteMethod.invoke('${dataSourceName}.${functionName}', params, function (data) {callback.call(this, data)})}
+'''.replace("\n", "").replace("\r", "")
+    private static
+    def errorFunctionTemplateText = '''$functionName: function ($params , callback) { alert('${message}')}'''.replace("\n", "").replace("\r", "")
 
     static
     def TYPE_MAPPING = ['string': 'text', 'long': 'integer', 'boolean': 'boolean', 'integer': 'integer', 'date': 'date', 'float': 'float', 'double': 'float']
@@ -63,7 +82,6 @@ isc.defineClass('RemoteMethod').addClassProperties({invoke: function (method, da
                 String c = new JSON(it as Map).toString()
                 b.append("isc.RestDataSource.create(${c});")
             }
-            b.append(REMOTE_DEF.replace("\n", "").replace("\r", ""))
             cachedDefinitions[lang] = b.toString()
         }
         cachedDefinitions[lang]
@@ -76,6 +94,61 @@ isc.defineClass('RemoteMethod').addClassProperties({invoke: function (method, da
 
     def getJsonSuffix() {
         return grailsApplication.config.grails.plugin.smartclient.debug ? '' : jsonSuffixString
+    }
+
+
+    def getRemoteApi() {
+        def engine = new SimpleTemplateEngine()
+        def remoteApiTemplate = engine.createTemplate(remoteApiTemplateText)
+        def serviceTemplate = engine.createTemplate(serviceTemplateText)
+        def functionTemplate = engine.createTemplate(functionTemplateText)
+        def errorFunctionTemplate = engine.createTemplate(errorFunctionTemplateText)
+        def bindingModel = [:]
+        def servicesDefinitions = []
+        grailsApplication.serviceClasses.each { sc ->
+            boolean remoteService = sc.clazz.getAnnotation(Remote.class)
+            def methods
+            if (remoteService) {
+                methods = sc.clazz.methods.findAll { !(it.name in ['hashCode', 'equals', 'toString']) }
+            } else {
+                methods = sc.clazz.methods.findAll { it.getAnnotation(Remote.class) != null }
+            }
+            if (!methods.isEmpty()) {
+                bindingModel.dataSourceName = "${sc.logicalPropertyName}Service"
+                bindingModel.serviceName = "${sc.name}Service"
+                def functionsDefinitions = []
+                methods.each { Method m ->
+                    bindingModel.functionName = m.name
+                    int index = 1
+                    def paramNames = m.parameterAnnotations.collect { Annotation[] anns ->
+                        String paramName = anns.find { Annotation a -> a instanceof NamedParam }?.value()
+                        paramName ?: "param${index++}"
+                    }
+                    bindingModel.params = paramNames.join(',')
+                    bindingModel.paramsMeta = m.parameterTypes.collect { Class c ->
+                        if (c.primitive) {
+                            bindingModel.message = "Primitive parameters are not supported. Please correct ${bindingModel.serviceName}.${bindingModel.functionName}"
+                        }
+                        "'${c.name}'"
+                    }.join(',')
+                    if (bindingModel.message) {
+                        functionsDefinitions << errorFunctionTemplate.make(bindingModel).toString()
+                        bindingModel.remove('message')
+                    } else {
+                        functionsDefinitions << functionTemplate.make(bindingModel).toString()
+                    }
+
+                }
+                bindingModel.functions = functionsDefinitions.join(',')
+                def srv = serviceTemplate.make(bindingModel).toString()
+                servicesDefinitions << srv
+            }
+        }
+        bindingModel.services = servicesDefinitions.join(',')
+        def builder = new StringBuilder(REMOTE_DEF)
+        builder.append(remoteApiTemplate.make(bindingModel).toString())
+        builder.toString()
+
     }
 
     private def buildDataSourceDefinition = { dsClass, lang ->
