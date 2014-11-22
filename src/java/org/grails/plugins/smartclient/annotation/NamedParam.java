@@ -6,8 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * If applied to the DataSource method will indicate that SmartClient progress dialog should be shown for the annotated
- * method
+ * Parameter annotation defining a name which will be used for JavaScript parameter
  *
  * @author Denis Halupa
  */
@@ -15,7 +14,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER})
 public @interface NamedParam {
     /**
-     * A key for the progress message shown in the dialog
+     * Name of parameter
      *
      * @return
      */

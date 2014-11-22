@@ -20,7 +20,9 @@ import java.net.URL;
 import java.util.regex.Pattern;
 
 /**
- * Created by dhalupa on 11/12/14.
+ * AST transformer which injects {@link NamedParam} parameter annotation for the purpose of preserving parameter name
+ *
+ * @author Denis Halupa
  */
 @AstTransformer
 public class SmartClientServiceTransformer implements AllArtefactClassInjector {

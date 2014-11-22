@@ -29,7 +29,7 @@ class SmartClientDatasourceControllerUnitSpec extends Specification {
 
     }
 
-    def "with non transactional request, single operation execution"() {
+    def "with non transactional request, single operation should be executed"() {
         given:
         request.json = '{ "dataSource":"invoice", "operationType":"fetch", "startRow":0, "endRow":75, "textMatchStyle":"substring", "componentId":"isc_ListGrid_0", "data":{ }, "oldValues":null }'
         when:

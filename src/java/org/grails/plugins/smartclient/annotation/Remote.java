@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * If applied to the Service class will expose methods for remote invocation
- * method
+ * method. It can also be applied to particular methods
  *
  * @author Denis Halupa
  */

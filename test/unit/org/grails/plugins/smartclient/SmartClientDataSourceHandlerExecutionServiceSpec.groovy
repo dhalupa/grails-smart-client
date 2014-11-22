@@ -88,16 +88,16 @@ class SmartClientDataSourceHandlerExecutionServiceSpec extends Specification {
 
     def "should be able to invoke method from exposed class"() {
         given:
-        def request = JSON.parse("""{ "dataSource":"exposedInvoiceService", "operationType":"custom",operationId:"doSomething", "data":{ "some":"data" } }""")
+        def request = JSON.parse("""{ "dataSource":"invoiceService", "operationType":"custom",operationId:"doSomething", "data":{meta:['java.lang.String','java.lang.Integer','java.lang.Object'],values:["data",1,5] } }""")
         when:
         def ret = service.executeOperation(null, request)
         then:
-        ret == [response: [status: 0, data: [retValue: [some: 'value1']]]]
+        ret == [response: [status: 0, data: [retValue: [some: 'value']]]]
     }
 
     def "should be forbiden to invoke not exposed service method"() {
         given:
-        def request = JSON.parse("""{ "dataSource":"invoiceService", "operationType":"custom",operationId:"notExposed", "data":{ "some":"data" } }""")
+        def request = JSON.parse("""{ "dataSource":"invoiceService", "operationType":"custom",operationId:"notExposed", "data":{meta:['java.lang.Object'],values:["data"] } }""")
         when:
         def ret = service.executeOperation(null, request)
         then:
@@ -106,7 +106,7 @@ class SmartClientDataSourceHandlerExecutionServiceSpec extends Specification {
 
     def "error response should be returned if method does not exists"() {
         given:
-        def request = JSON.parse("""{ "dataSource":"invoiceService", "operationType":"custom",operationId:"foo", "data":{ "some":"data" } }""")
+        def request = JSON.parse("""{ "dataSource":"invoiceService", "operationType":"custom",operationId:"foo", "data":{meta:['java.lang.Object'],values:["data"] } }""")
         when:
         def ret = service.executeOperation(null, request)
         then:

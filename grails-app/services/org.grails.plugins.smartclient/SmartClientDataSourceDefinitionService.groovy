@@ -12,13 +12,17 @@ import org.grails.plugins.smartclient.annotation.Remote
 import org.grails.plugins.smartclient.builder.FieldsDefinitionBuilder
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.context.NoSuchMessageException
+import org.springframework.util.ReflectionUtils
 
 import java.beans.Introspector
+import java.beans.PropertyDescriptor
 import java.lang.annotation.Annotation
 import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 
 /**
- * Service responsible to build definition of datasources from registered datasource artefacts and exposed service methods
+ * Service responsible to build definition of datasources and remote API from registered datasource artefacts
+ * and exposed service methods
  * @author Denis Halupa
  */
 class SmartClientDataSourceDefinitionService {
@@ -35,32 +39,52 @@ class SmartClientDataSourceDefinitionService {
     def messageSource
 
     static def SYSTEM_PROPS = ['version', 'created']
-    static def REMOTE_DEF = '''
-isc.defineClass('RemoteMethod').addClassProperties({
-invoke: function (method, data, callback) {
-var parts = method.split('.');
-var ds = isc.DataSource.get(parts[0]);
-if (ds) {if (callback) {ds.performCustomOperation(parts[1], data, function () {
-var data = arguments[1][0].retValue;
-for (var p in data) {
-if (data[p] === void 0) { delete data[p];}}
-callback.call(this, data);})} else {ds.performCustomOperation(parts[1], data);}
-} else {alert('DataSource ' + parts[0] + ' can not be found!')}}});'''.replace("\n", "").replace("\r", "")
+    static def REMOTE_DEF = '''isc.defineClass('RemoteMethod').addClassProperties({
+    invoke: function (method, data, callback) {
+        var parts = method.split('.');
+        var ds = isc.DataSource.get(parts[0]);
+        if (ds) {
+            if (callback) {
+                ds.performCustomOperation(parts[1], data, function () {
+                    var data = arguments[1][0].retValue;
+                    for (var p in data) {
+                        if (data[p] === void 0) { delete data[p];}
+                    }
+                    callback.call(this, data);
+                })
+            } else {
+                ds.performCustomOperation(parts[1], data);
+            }
+            } else {
+                alert('DataSource ' + parts[0] + ' can not be found!')}
+            }
+        });'''
 
-    private static def remoteApiTemplateText = 'var rmt=new function(){return { $services }}();'
+    private static def remoteApiTemplateText = '''
+var rmt=new function(){
+    return {
+        $services
+    }
+}();'''
 
-    private static def serviceTemplateText = '${serviceName}: { ${functions} }'
+    private static def serviceTemplateText = '''
+        ${serviceName}: {
+            ${functions}
+        }'''
 
     private static def functionTemplateText = '''
-$functionName: function ($params , callback) {
-var params = {values: [$params],meta: [$paramsMeta]};
-isc.RemoteMethod.invoke('${dataSourceName}.${functionName}', params, function (data) {callback.call(this, data)})}
-'''.replace("\n", "").replace("\r", "")
+            $functionName: function ($params , callback) {
+                var params = {values: [$params],meta: [$paramsMeta]};
+                isc.RemoteMethod.invoke('${dataSourceName}.${functionName}', params, function (data) {callback.call(this, data)})
+            }
+'''
     private static
-    def errorFunctionTemplateText = '''$functionName: function ($params , callback) { alert('${message}')}'''.replace("\n", "").replace("\r", "")
+    def errorFunctionTemplateText = '''
+$functionName: function ($params , callback) { alert('${message}')}'''
 
     static
     def TYPE_MAPPING = ['string': 'text', 'long': 'integer', 'boolean': 'boolean', 'integer': 'integer', 'date': 'date', 'float': 'float', 'double': 'float']
+
 
     def resetDefinitions() {
         cachedDefinitions = [:]
@@ -105,11 +129,11 @@ isc.RemoteMethod.invoke('${dataSourceName}.${functionName}', params, function (d
         def errorFunctionTemplate = engine.createTemplate(errorFunctionTemplateText)
         def bindingModel = [:]
         def servicesDefinitions = []
-        grailsApplication.serviceClasses.each { sc ->
+        grailsApplication.serviceClasses.each { GrailsServiceClass sc ->
             boolean remoteService = sc.clazz.getAnnotation(Remote.class)
             def methods
             if (remoteService) {
-                methods = sc.clazz.methods.findAll { !(it.name in ['hashCode', 'equals', 'toString']) }
+                methods = extractUserMethods(sc.clazz)
             } else {
                 methods = sc.clazz.methods.findAll { it.getAnnotation(Remote.class) != null }
             }
@@ -295,6 +319,43 @@ isc.RemoteMethod.invoke('${dataSourceName}.${functionName}', params, function (d
             return 'any'
         }
 
+    }
+
+    //copied from gwt plugin
+    private def extractUserMethods(Class serviceClass) {
+        def methods = []
+        // Find out what properties the service class contains, because
+        // we want to leave them out of the interface definition.
+        def info = Introspector.getBeanInfo(serviceClass)
+        def propMethods = [] as Set
+        info.propertyDescriptors.each { PropertyDescriptor desc ->
+            propMethods << desc.readMethod
+            propMethods << desc.writeMethod
+
+            // Groovy adds a "get*()" method for booleans as well as
+            // the usual "is*()", so we have to remove it too.
+            if (desc.readMethod?.name?.startsWith("is")) {
+                def name = "get${desc.readMethod.name[2..-1]}".toString()
+                def getMethod = info.methodDescriptors.find { it.name == name }
+                if (getMethod) {
+                    propMethods << getMethod.method
+                }
+            }
+        }
+
+        // Iterate through the methods declared by the Grails service,
+        // adding the appropriate ones to the interface definitions.
+        serviceClass.declaredMethods.each { Method method ->
+            // Skip non-public, static, Groovy, and property methods.
+            if (method.synthetic ||
+                    !Modifier.isPublic(method.modifiers) ||
+                    Modifier.isStatic(method.modifiers) ||
+                    propMethods.contains(method)) {
+                return
+            }
+            methods << method
+        }
+        methods
     }
 
 
