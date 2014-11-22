@@ -46,16 +46,12 @@ This is the plugin which supports operation of smartclient datasources
                 }
             }
         }
-        def remoteApi = new File('web-app/js/sc-remote-api.js')
-        def w = remoteApi.newWriter()
-        w << application.mainContext.smartClientDataSourceDefinitionService.remoteApi
-        w.close()
+        writeRemoteApi(application.mainContext)
     }
 
     def documentation = "http://grails.org/plugin/smartclient"
 
     def doWithSpring = {
-
         application.dataSourceHandlerClasses.each { GrailsClass dataSourceHandlerClass ->
             "smartClient${dataSourceHandlerClass.shortName}"(dataSourceHandlerClass.clazz) { bean ->
                 bean.autowire = "byName"
@@ -63,13 +59,17 @@ This is the plugin which supports operation of smartclient datasources
         }
     }
 
-    def doWithApplicationContext = { appCtx ->
-        def remoteApi = new File('web-app/js/sc-remote-api.js')
+    def doWithDynamicMethods = { applicationContext ->
+        writeRemoteApi(application)
+    }
+
+
+    private def writeRemoteApi(application) {
+        String fileName = application.config.grails.plugin.smartclient.remoteApiFile ?: 'web-app/js/sc-remote-api.js'
+        def remoteApi = new File(fileName)
         def w = remoteApi.newWriter()
-        w << appCtx.smartClientDataSourceDefinitionService.remoteApi
+        w << application.mainContext.smartClientDataSourceDefinitionService.remoteApi
         w.close()
-
-
     }
 
 
