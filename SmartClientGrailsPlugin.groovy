@@ -2,8 +2,7 @@ import org.codehaus.groovy.grails.commons.GrailsClass
 import org.grails.plugins.smartclient.DataSourceHandlerArtefactHandler
 
 class SmartClientGrailsPlugin {
-    def packaging = "binary"
-    def version = "0.2"
+    def version = "0.3"
     def grailsVersion = "1.3.7 > *"
     def dependsOn = [:]
     def observe = ["services"]
