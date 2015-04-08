@@ -20,8 +20,14 @@ class SmartClientDatasourceControllerUnitSpec extends Specification {
 
         grailsApplication.registerArtefactHandler(new DataSourceHandlerArtefactHandler())
         grailsApplication.addArtefact(InvoiceDataSourceHandler)
+        grailsApplication.addArtefact(NonTransactionalInvoiceDataSourceHandler)
+        defineBeans {
+            'smartClientInvoiceDataSourceHandler'(InvoiceDataSourceHandler)
+            'smartClientNonTransactionalInvoiceDataSourceHandler'(NonTransactionalInvoiceDataSourceHandler)
+        }
 
         controller.smartClientDataSourceHandlerExecutionService = Mock(SmartClientDataSourceHandlerExecutionService)
+        controller.nonTransactionalSmartClientDataSourceHandlerExecutionService = Mock(NonTransactionalSmartClientDataSourceHandlerExecutionService)
         controller.smartClientDataSourceDefinitionService = Mock(SmartClientDataSourceDefinitionService) {
             getJsonPrefix() >> ''
             getJsonSuffix() >> ''
@@ -46,6 +52,16 @@ class SmartClientDatasourceControllerUnitSpec extends Specification {
         controller.serve()
         then:
         1 * controller.smartClientDataSourceHandlerExecutionService.executeTransaction(_) >> [some: 'response']
+        response.contentAsString == """{"some":"response"}"""
+    }
+
+    def "when datasource handler is non transactional a non transactional service should be used for execution"() {
+        given:
+        request.json = '{ "dataSource":"nonTransactionalInvoice", "operationType":"custom", "data":{ }, "oldValues":null }'
+        when:
+        controller.serve()
+        then:
+        1 * controller.nonTransactionalSmartClientDataSourceHandlerExecutionService.executeOperation(null, _) >> [some: 'response']
         response.contentAsString == """{"some":"response"}"""
     }
 }
@@ -96,6 +112,21 @@ class InvoiceDataSourceHandler {
 
     def myMethod(data) {
         [exec: 'custom']
+    }
+
+
+}
+
+class NonTransactionalInvoiceDataSourceHandler {
+
+    static transactional = false
+    static operations = ['custom']
+
+
+    @Progress('some.key')
+    def custom(data) {
+
+
     }
 
 

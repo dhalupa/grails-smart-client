@@ -1,6 +1,7 @@
 package org.grails.plugins.smartclient
 
 import grails.converters.JSON
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 /**
  * Controller responsible for json communication with SmartClient datasource instance
@@ -12,6 +13,7 @@ class SmartClientDatasourceController {
 
     def smartClientDataSourceDefinitionService
     def smartClientDataSourceHandlerExecutionService
+    def nonTransactionalSmartClientDataSourceHandlerExecutionService
 
     /**
      * Entry point for all SmartClient datasource operations
@@ -22,7 +24,7 @@ class SmartClientDatasourceController {
         if (request.JSON.transaction) {
             model = smartClientDataSourceHandlerExecutionService.executeTransaction(request.JSON.transaction)
         } else {
-            model = smartClientDataSourceHandlerExecutionService.executeOperation(params.dsID, request.JSON)
+            model = resolveService(params.dsID, request.JSON).executeOperation(params.dsID, request.JSON)
         }
         def converterConfig = grailsApplication.config.grails.plugin.smartclient.converterConfig
         def jsonPrefix = smartClientDataSourceDefinitionService.jsonPrefix
@@ -44,6 +46,23 @@ class SmartClientDatasourceController {
      */
     def definitions() {
         render(text: smartClientDataSourceDefinitionService.getDefinitions(params.lang), contentType: 'application/javascript')
+    }
+
+
+    private def resolveService(dsID, req) {
+        def dsName = dsID != null ? dsID : req.dataSource
+        if (dsName.endsWith('Service')) {
+            return nonTransactionalSmartClientDataSourceHandlerExecutionService
+        } else {
+            def dsHandler = grailsApplication.mainContext.getBean("smartClient${dsName.capitalize()}DataSourceHandler")
+            def transactional = GrailsClassUtils.getStaticFieldValue(dsHandler.getClass(), 'transactional')
+            if (transactional != null && !transactional) {
+                return nonTransactionalSmartClientDataSourceHandlerExecutionService
+            } else {
+                return smartClientDataSourceHandlerExecutionService
+            }
+
+        }
     }
 
 

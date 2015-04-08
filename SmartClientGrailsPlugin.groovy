@@ -55,7 +55,7 @@ This is the plugin which supports operation of smartclient datasources
     }
 
     def doWithDynamicMethods = { applicationContext ->
-        writeRemoteApi(application)
+  //      writeRemoteApi(application)
     }
 
 
