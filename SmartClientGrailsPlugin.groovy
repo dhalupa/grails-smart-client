@@ -2,7 +2,7 @@ import org.codehaus.groovy.grails.commons.GrailsClass
 import org.grails.plugins.smartclient.DataSourceHandlerArtefactHandler
 
 class SmartClientGrailsPlugin {
-    def version = "0.3"
+    def version = "0.4"
     def grailsVersion = "1.3.7 > *"
     def dependsOn = [:]
     def observe = ["services"]
@@ -40,7 +40,7 @@ This is the plugin which supports operation of smartclient datasources
                 }
             }
         }
-        writeRemoteApi(application.mainContext)
+    //    writeRemoteApi(application.mainContext)
     }
 
     def documentation = "http://grails.org/plugin/smartclient"

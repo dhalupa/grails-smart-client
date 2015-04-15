@@ -106,6 +106,7 @@ $functionName: function ($params , callback) { alert('${message}')}'''
                 String c = new JSON(it as Map).toString()
                 b.append("isc.RestDataSource.create(${c});")
             }
+            b.append(REMOTE_DEF.replace("\n", "").replace("\r", ""))
             cachedDefinitions[lang] = b.toString()
         }
         cachedDefinitions[lang]
