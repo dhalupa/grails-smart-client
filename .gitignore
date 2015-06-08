@@ -33,3 +33,7 @@
 .idea/
 out/
 
+
+build
+grails-smart-client.iws
+grails-smart-client.ipr

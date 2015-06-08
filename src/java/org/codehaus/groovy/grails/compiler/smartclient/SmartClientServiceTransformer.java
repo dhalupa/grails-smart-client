@@ -7,11 +7,8 @@ import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.commons.ServiceArtefactHandler;
-import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.AllArtefactClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.grails.plugins.smartclient.annotation.NamedParam;
 import org.grails.plugins.smartclient.annotation.Remote;
@@ -32,7 +29,6 @@ public class SmartClientServiceTransformer implements AllArtefactClassInjector {
             GrailsResourceUtils.GRAILS_APP_DIR + "/services/(.+)Service\\.groovy");
 
 
-    @Override
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         for (MethodNode method : classNode.getMethods()) {
             if (!method.isStatic() && method.isPublic() && !method.getAnnotations(REMOTE_ANNOTATION_NODE.getClassNode()).isEmpty()) {
@@ -45,9 +41,13 @@ public class SmartClientServiceTransformer implements AllArtefactClassInjector {
         }
     }
 
-    @Override
+
     public void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
+    }
+
+    public void performInjectionOnAnnotatedClass(SourceUnit sourceUnit, ClassNode classNode) {
+
     }
 
     public boolean shouldInject(URL url) {
