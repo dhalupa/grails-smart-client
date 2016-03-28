@@ -3,6 +3,7 @@ package org.grails.plugins.smartclient
 import grails.converters.JSON
 import groovy.text.SimpleTemplateEngine
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.GrailsServiceClass
@@ -93,8 +94,11 @@ $functionName: function ($params , callback) { alert('${message}')}'''
     def getDefinitions(lang) {
         if (!cachedDefinitions[lang]) {
             def d = grailsApplication.dataSourceHandlerClasses.findAll { ds -> ds.name }.collect { dataSourceHandlerClass ->
-                buildDataSourceDefinition(dataSourceHandlerClass, lang)
-            }
+                def doNotGenerate = GrailsClassUtils.getStaticPropertyValue(dataSourceHandlerClass.getClazz(), 'doNotGenerateDataSource')
+                if (!doNotGenerate) {
+                    buildDataSourceDefinition(dataSourceHandlerClass, lang)
+                }
+            }.findAll { it }
             def remoteServices = grailsApplication.serviceClasses.findAll { GrailsServiceClass sc ->
                 def clazz = sc.getClazz()
                 def res = clazz.getAnnotation(Remote) != null || clazz.methods.find { it.getAnnotation(Remote) } != null
