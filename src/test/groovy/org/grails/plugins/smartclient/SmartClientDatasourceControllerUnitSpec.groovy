@@ -1,11 +1,12 @@
 package org.grails.plugins.smartclient
 
 import grails.persistence.Entity
+import grails.smart.client.DataSourceHandlerArtefactHandler
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
-import org.grails.plugins.smartclient.annotation.NamedParam
-import org.grails.plugins.smartclient.annotation.Progress
-import org.grails.plugins.smartclient.annotation.Remote
+import grails.smart.client.annotation.NamedParam
+import grails.smart.client.annotation.Progress
+import grails.smart.client.annotation.Remote
 import spock.lang.Specification
 
 /**

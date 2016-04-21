@@ -7,9 +7,9 @@ import grails.core.GrailsServiceClass
 import grails.util.GrailsClassUtils
 import groovy.text.SimpleTemplateEngine
 import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.plugins.smartclient.annotation.NamedParam
-import org.grails.plugins.smartclient.annotation.Progress
-import org.grails.plugins.smartclient.annotation.Remote
+import grails.smart.client.annotation.NamedParam
+import grails.smart.client.annotation.Progress
+import grails.smart.client.annotation.Remote
 import org.grails.plugins.smartclient.builder.FieldsDefinitionBuilder
 import org.springframework.context.NoSuchMessageException
 

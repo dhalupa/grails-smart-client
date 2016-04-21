@@ -1,6 +1,6 @@
 package org.grails.plugins.smartclient.builder
 
-import org.grails.plugins.smartclient.annotation.Remote
+import grails.smart.client.annotation.Remote
 import org.springframework.aop.framework.AopProxyUtils
 import org.springframework.util.ReflectionUtils
 

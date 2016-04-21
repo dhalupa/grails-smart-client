@@ -1,6 +1,7 @@
 package org.grails.plugins.smartclient
 
 import grails.converters.JSON
+import grails.smart.client.DataSourceHandlerArtefactHandler
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 import org.grails.web.converters.marshaller.json.CollectionMarshaller

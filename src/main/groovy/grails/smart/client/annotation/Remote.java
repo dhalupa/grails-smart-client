@@ -1,4 +1,4 @@
-package org.grails.plugins.smartclient.annotation;
+package grails.smart.client.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

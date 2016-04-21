@@ -1,4 +1,4 @@
-package org.grails.plugins.smartclient;
+package grails.smart.client;
 
 import grails.core.ArtefactHandlerAdapter;
 
