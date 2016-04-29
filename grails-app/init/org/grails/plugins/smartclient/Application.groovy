@@ -1,4 +1,4 @@
-package grails.smart.client
+package org.grails.plugins.smartclient
 
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration

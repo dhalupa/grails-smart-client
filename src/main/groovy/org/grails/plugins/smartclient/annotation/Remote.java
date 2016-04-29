@@ -1,4 +1,4 @@
-package grails.smart.client.annotation;
+package org.grails.plugins.smartclient.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -14,4 +14,17 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface Remote {
+    /**
+     * Define which operation type is supported by annotated method
+     *
+     * @return
+     */
+    Operation operation() default Operation.CUSTOM;
+
+    /**
+     * Define whether some kind of response transformation is applied
+     *
+     * @return
+     */
+    boolean raw() default false;
 }

@@ -1,3 +1,5 @@
+
+
 buildscript {
     ext {
         grailsVersion = project.grailsVersion
@@ -18,7 +20,7 @@ plugins {
     id "com.jfrog.bintray" version "1.2"
 }
 
-version "0.6-SNAPSHOT"
+version "0.6"
 group "org.grails.plugins"
 
 apply plugin: 'maven-publish'
@@ -29,16 +31,16 @@ apply plugin: "org.grails.grails-plugin"
 apply plugin: "org.grails.grails-gsp"
 apply plugin: 'com.jfrog.artifactory'
 // Used for publishing to central repository, remove if not needed
-apply from:'https://raw.githubusercontent.com/grails/grails-profile-repository/master/profiles/plugin/templates/grailsCentralPublishing.gradle'
-apply from:'https://raw.githubusercontent.com/grails/grails-profile-repository/master/profiles/plugin/templates/bintrayPublishing.gradle'
+apply from: 'https://raw.githubusercontent.com/grails/grails-profile-repository/master/profiles/plugin/templates/grailsCentralPublishing.gradle'
+apply from: 'https://raw.githubusercontent.com/grails/grails-profile-repository/master/profiles/plugin/templates/bintrayPublishing.gradle'
 
 ext {
     grailsVersion = project.grailsVersion
     gradleWrapperVersion = project.gradleWrapperVersion
 }
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenLocal()
@@ -94,7 +96,7 @@ artifactory {
     contextUrl = 'https://artifactory.abz-reporting.com/artifactory'
     publish {
         repository {
-            repoKey = 'plugins-snapshot-local' // The Artifactory repository key to publish to
+            repoKey = 'plugins-release-local' // The Artifactory repository key to publish to
             username = "${abzLdapUser}" // The publisher user name
             password = "${abzLdapPassword}" // The publisher password
         }
@@ -105,7 +107,7 @@ artifactory {
             publications('mavenJava')
             publishArtifacts = true
             // Properties to be attached to the published artifacts.
-            properties = ['qa.level': 'basic', 'dev.team' : 'core']
+            properties = ['qa.level': 'basic', 'dev.team': 'core']
             // Publish generated POM files to Artifactory (true by default)
             publishPom = true
         }
@@ -114,3 +116,5 @@ artifactory {
         repoKey = 'jcenter'
     }
 }
+
+
