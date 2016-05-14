@@ -151,7 +151,7 @@ class InvoiceService {
         return [some: ++data.value]
     }
 
-    @Remote(operation = Operation.FETCH)
+    @Remote(Operation.FETCH)
     def fetchSomething(data) {
         return [[some: 1], [some: 1]]
     }

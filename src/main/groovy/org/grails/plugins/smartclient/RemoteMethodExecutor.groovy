@@ -12,16 +12,17 @@ import org.springframework.aop.framework.AopProxyUtils
 @Log4j
 class RemoteMethodExecutor implements SmartClientResponseRenderer {
     def grailsApplication
+    def messageSource
 
     /**
      * Executes batch of operations in a single transaction
      * @param transaction
      * @return
      */
-    def executeTransaction(transaction) {
+    def executeTransaction(transaction, locale) {
         def model = []
         transaction.operations.each { request ->
-            def resp = execute(request.data)
+            def resp = execute(request.data, locale)
             resp.response.queueStatus = 0
             model << resp
         }
@@ -33,13 +34,13 @@ class RemoteMethodExecutor implements SmartClientResponseRenderer {
      * @param data is json request
      * @return
      */
-    def execute(data) {
+    def execute(data, locale) {
         String[] methodLocator = StringUtils.split(data.remove('__method'), '.')
         String serviceName = StringUtils.uncapitalize(methodLocator[0])
         String methodName = methodLocator[1]
         def retValue
         try {
-            retValue = remoteMethodHandler.call(serviceName, methodName, data)
+            retValue = remoteMethodHandler.call(serviceName, methodName, data, locale)
         } catch (Throwable t) {
             log.error(t.message, t)
             retValue = renderErrorResponse(t.message)
@@ -48,7 +49,7 @@ class RemoteMethodExecutor implements SmartClientResponseRenderer {
     }
 
 
-    private remoteMethodHandler = { serviceName, methodName, data ->
+    private remoteMethodHandler = { serviceName, methodName, data, locale ->
         def service = grailsApplication.mainContext.getBean(serviceName)
         def methods = service.metaClass.methods.findAll { it.name == methodName }
         Class clazz = AopProxyUtils.ultimateTargetClass(service)
@@ -61,10 +62,11 @@ class RemoteMethodExecutor implements SmartClientResponseRenderer {
                 def value = service.invokeMethod(methodName, data)
                 def raw = m.getAnnotation(Remote)?.raw() ?: false
                 if (!raw) {
-                    def operation = m.getAnnotation(Remote)?.operation() ?: Operation.CUSTOM
+                    def operation = m.getAnnotation(Remote)?.value() ?: Operation.CUSTOM
                     switch (operation) {
                         case Operation.ADD:
                         case Operation.UPDATE:
+                            return renderDataUpdateResponse(value, messageSource, locale)
                         case Operation.REMOVE:
                         case Operation.CUSTOM:
                             return renderDataResponse(value)

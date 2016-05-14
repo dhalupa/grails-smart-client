@@ -19,7 +19,7 @@ public @interface Remote {
      *
      * @return
      */
-    Operation operation() default Operation.CUSTOM;
+    Operation value() default Operation.CUSTOM;
 
     /**
      * Define whether some kind of response transformation is applied

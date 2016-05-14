@@ -5,8 +5,8 @@
 isc.defineClass('RemoteMethodDataSource', 'RestDataSource').addProperties({
     dataURL: 'remoteMethodExecutor',
     dataFormat: 'json',
-    jsonPrefix: '${jsonPrefix}',
-    jsonSufix: '${jsonSufix}',
+    jsonPrefix: '${raw(jsonPrefix)}',
+    jsonSufix: '${raw(jsonSufix)}',
     fetchMethod: null,
     updateMethod: null,
     addMethod: null,
@@ -37,8 +37,8 @@ isc.RestDataSource.create({
     "fields": [],
     "progressInfo": {},
     "operationBindings": [{"operationType": "custom", "dataProtocol": "postMessage"}],
-    "jsonPrefix": '${jsonPrefix}',
-    "jsonSufix": '${jsonSufix}'
+    "jsonPrefix": '${raw(jsonPrefix)}',
+    "jsonSufix": '${raw(jsonSufix)}'
 });
 /**
  * This class is used to invoke exposed remote method

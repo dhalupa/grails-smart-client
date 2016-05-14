@@ -50,7 +50,7 @@ isc.RemoteMethod.invoke('${serviceName}.${methodName}', arg, cb);
                 bindingModel.serviceName = clazz.simpleName
                 def methodDefinitions = []
                 methods.sort { it.name }.each { Method m ->
-                    if (remoteService || m.getAnnotation(Remote).operation() == Operation.CUSTOM) {
+                    if (remoteService || m.getAnnotation(Remote).value() == Operation.CUSTOM) {
                         bindingModel.methodName = m.name
                         def paramsMeta = m.parameters.collect { Parameter parameter ->
                             def paramAnnotation = parameter.getAnnotation(P)
