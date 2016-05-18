@@ -11,7 +11,7 @@ class ConfigProvider {
     }
 
     def getConverterConfig() {
-        grailsApplication.config.grails.plugin.smartclient.converterConfig
+        grailsApplication.config.grails.plugin.smartclient.converterConfig?:'smart'
     }
 
     String getJsonPrefix() {

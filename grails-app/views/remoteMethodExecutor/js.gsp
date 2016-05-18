@@ -1,4 +1,3 @@
-
 /**
  * This type of datasource supports usage of exposed remote methods for operations
  */
@@ -50,7 +49,7 @@ isc.defineClass('RemoteMethod').addClassProperties({
         data.__method = method;
         var ds = isc.DataSource.get('scRemoteMethodExecutionDS');
         ds.performCustomOperation('custom', data, function () {
-            var data = arguments[1][0];
+            var data = arguments[1][0].result;
             cb.call(this, data);
         })
 
