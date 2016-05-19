@@ -66,8 +66,8 @@ class RemoteMethodExecutor implements SmartClientResponseRenderer {
                     switch (operation) {
                         case Operation.ADD:
                         case Operation.UPDATE:
-                            return renderDataUpdateResponse(value, messageSource, locale)
                         case Operation.REMOVE:
+                            return renderDataUpdateResponse(value, messageSource, locale)
                         case Operation.CUSTOM:
                             return renderDataResponse([result: value])
                         case Operation.FETCH:
