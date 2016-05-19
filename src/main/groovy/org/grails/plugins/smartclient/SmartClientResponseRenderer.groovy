@@ -31,7 +31,7 @@ trait SmartClientResponseRenderer {
      * @return
      */
     def renderDataResponse(value) {
-        return ['response': [status: 0, data: [result: value]]]
+        return ['response': [status: 0, data: value]]
     }
     /**
      * Response rendered in case some kind of error occured
