@@ -14,15 +14,27 @@ trait SmartClientResponseRenderer {
      * @return
      */
     def renderFetchResponse(model) {
-        ['response':
-                 [
-                         status   : 0,
-                         startRow : 0,
-                         endRow   : model.size(),
-                         totalRows: model.size(),
-                         data     : model
-                 ]
-        ]
+        if (model instanceof PagingFetchResponse) {
+            return ['response':
+                            [
+                                    status   : 0,
+                                    startRow : model.startRow,
+                                    endRow   : model.endRow,
+                                    totalRows: model.totalRows,
+                                    data     : model
+                            ]
+            ]
+        } else {
+            return ['response':
+                            [
+                                    status   : 0,
+                                    startRow : 0,
+                                    endRow   : model.size(),
+                                    totalRows: model.size(),
+                                    data     : model
+                            ]
+            ]
+        }
     }
 
     /**

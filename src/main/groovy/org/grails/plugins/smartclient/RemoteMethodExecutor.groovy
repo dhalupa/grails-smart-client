@@ -4,6 +4,7 @@ import groovy.util.logging.Log4j
 import org.apache.commons.lang.StringUtils
 import org.grails.plugins.smartclient.annotation.Operation
 import org.grails.plugins.smartclient.annotation.Remote
+import org.grails.web.json.JSONObject
 import org.springframework.aop.framework.AopProxyUtils
 
 /**
@@ -34,13 +35,13 @@ class RemoteMethodExecutor implements SmartClientResponseRenderer {
      * @param data is json request
      * @return
      */
-    def execute(data, locale) {
-        String[] methodLocator = StringUtils.split(data.remove('__method'), '.')
+    def execute(request, locale) {
+        String[] methodLocator = StringUtils.split(request.data.remove('__method'), '.')
         String serviceName = StringUtils.uncapitalize(methodLocator[0])
         String methodName = methodLocator[1]
         def retValue
         try {
-            retValue = remoteMethodHandler.call(serviceName, methodName, data, locale)
+            retValue = remoteMethodHandler.call(serviceName, methodName, request, locale)
         } catch (Throwable t) {
             log.error(t.message, t)
             retValue = renderErrorResponse(t.message)
@@ -49,20 +50,29 @@ class RemoteMethodExecutor implements SmartClientResponseRenderer {
     }
 
 
-    private remoteMethodHandler = { serviceName, methodName, data, locale ->
+    private remoteMethodHandler = { serviceName, methodName, request, locale ->
+        def data = request.data
         def service = grailsApplication.mainContext.getBean(serviceName)
         def methods = service.metaClass.methods.findAll { it.name == methodName }
         Class clazz = AopProxyUtils.ultimateTargetClass(service)
         if (methods.size() == 1) {
             def m = methods[0].cachedMethod
+            def operation = m.getAnnotation(Remote)?.value() ?: Operation.CUSTOM
             if (m.getAnnotation(Remote) || clazz.getAnnotation(Remote)) {
-                if (data['__params']) {
-                    data = data['__params'].collect { it } as Object[]
+                switch (operation) {
+                    case Operation.CUSTOM:
+                        data = data['__params'].collect { it } as Object[]
+                        break
+                    case Operation.FETCH:
+                        ['startRow', 'endRow', 'textMatchStyle'].each {
+                            if (!request.isNull(it)) {
+                                data."_${it}" = request[it]
+                            }
+                        }
                 }
                 def value = service.invokeMethod(methodName, data)
                 def raw = m.getAnnotation(Remote)?.raw() ?: false
                 if (!raw) {
-                    def operation = m.getAnnotation(Remote)?.value() ?: Operation.CUSTOM
                     switch (operation) {
                         case Operation.ADD:
                         case Operation.UPDATE:

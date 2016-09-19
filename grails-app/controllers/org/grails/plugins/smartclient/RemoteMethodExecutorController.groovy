@@ -13,7 +13,7 @@ class RemoteMethodExecutorController {
         if (request.JSON.transaction) {
             model = remoteMethodExecutor.executeTransaction(request.JSON.transaction, locale)
         } else {
-            model = remoteMethodExecutor.execute(request.JSON.data, locale)
+            model = remoteMethodExecutor.execute(request.JSON, locale)
         }
 
         if (configProvider.converterConfig) {
