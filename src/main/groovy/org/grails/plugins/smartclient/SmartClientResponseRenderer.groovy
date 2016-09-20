@@ -21,7 +21,7 @@ trait SmartClientResponseRenderer {
                                     startRow : model.startRow,
                                     endRow   : model.endRow,
                                     totalRows: model.totalRows,
-                                    data     : model
+                                    data     : model.model
                             ]
             ]
         } else {
