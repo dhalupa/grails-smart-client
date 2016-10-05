@@ -23,7 +23,7 @@ class RemoteMethodExecutor implements SmartClientResponseRenderer {
     def executeTransaction(transaction, locale) {
         def model = []
         transaction.operations.each { request ->
-            def resp = execute(request.data, locale)
+            def resp = execute(request, locale)
             resp.response.queueStatus = 0
             model << resp
         }

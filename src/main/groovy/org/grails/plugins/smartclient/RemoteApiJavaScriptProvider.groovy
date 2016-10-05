@@ -24,8 +24,10 @@ class RemoteApiJavaScriptProvider {
 
     String remoteApiTemplateText = 'var rmt=new function(){var emptyFn = function () {};return {${services}}}();'
     String serviceTemplateText = '${serviceName}:{${methods}}'
+    String functionSignatureTemplateText = 'function (${params} , callback)'
+    String noParamsFunctionSignatureTemplateText = 'function (callback)'
     String functionTemplateText = '''
-$methodName : function (${params} , callback) {
+$methodName : $functionSignature {
 var cb=callback||emptyFn;
 var arg = {__params: [${params}]};
 isc.RemoteMethod.invoke('${serviceName}.${methodName}', arg, cb);
@@ -37,6 +39,7 @@ isc.RemoteMethod.invoke('${serviceName}.${methodName}', arg, cb);
         def engine = new SimpleTemplateEngine()
         def remoteApiTemplate = engine.createTemplate(StringUtils.replaceChars(remoteApiTemplateText, '\n', ''))
         def serviceTemplate = engine.createTemplate(StringUtils.replaceChars(serviceTemplateText, '\n', ''))
+
         def functionTemplate = engine.createTemplate(StringUtils.replaceChars(functionTemplateText, '\n', ''))
         def bindingModel = [:]
         def serviceDefinitions = []
@@ -57,6 +60,11 @@ isc.RemoteMethod.invoke('${serviceName}.${methodName}', arg, cb);
                             paramAnnotation ? paramAnnotation.value() : parameter.name
                         }
                         bindingModel.params = paramsMeta.join(',')
+                        if (paramsMeta.empty) {
+                            bindingModel.functionSignature = 'function(callback)'
+                        } else {
+                            bindingModel.functionSignature = "function(${bindingModel.params}, callback)".toString()
+                        }
                         methodDefinitions << functionTemplate.make(bindingModel).toString()
                     }
                 }

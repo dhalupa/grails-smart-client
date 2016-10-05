@@ -31,13 +31,24 @@ class RemoteMethodExecutorControllerSpec extends Specification {
 
     def "it should be possible to invoke exposed remote method"() {
         given:
-        request.json = '{ "data":{__method:"InvoiceService.doSomething",value:1 }, "oldValues":null }'
+        request.json = '{ "data":{__method:"InvoiceService.doSomething",__params:[1] }, "oldValues":null }'
         when:
         controller.index()
         def resp = JSON.parse(response.contentAsString)
         then:
         resp.response.status == 0
-        resp.response.data.some == 2
+        resp.response.data.result == 2
+    }
+
+    def "it should be possible to invoke exposed remote method without parameters"() {
+        given:
+        request.json = '{ "data":{__method:"InvoiceService.doSomethingWithoutParam",__params:[] }, "oldValues":null }'
+        when:
+        controller.index()
+        def resp = JSON.parse(response.contentAsString)
+        then:
+        resp.response.status == 0
+        resp.response.data.result == 'val'
     }
 
     def "if service method not exist error response should be returned"() {
@@ -76,19 +87,19 @@ class RemoteMethodExecutorControllerSpec extends Specification {
 
     def "it should be possible to invoke method on the exposed class"() {
         given:
-        request.json = '{ "data":{__method:"ExposedInvoiceService.doSomething",value:1 }, "oldValues":null }'
+        request.json = '{ "data":{__method:"ExposedInvoiceService.doSomething",__params:[1] }, "oldValues":null }'
         when:
         controller.index()
         def resp = JSON.parse(response.contentAsString)
         then:
         println response.contentAsString
         resp.response.status == 0
-        resp.response.data.some1 == 2
+        resp.response.data.result == 2
     }
 
     def "with transactional request, multiple exposed methods should invoked"() {
         given:
-        request.json = """{ transaction: { transactionNum: 2, operations: [{ "data":{__method:"ExposedInvoiceService.doSomething",value:2 } }, {  "data":{__method:"InvoiceService.doSomething",value:3 } }]}}"""
+        request.json = """{ transaction: { transactionNum: 2, operations: [{ "data":{__method:"ExposedInvoiceService.doSomething",__params:[2] } }, {  "data":{__method:"InvoiceService.doSomething",__params:[3] } }]}}"""
         when:
         controller.index()
         def resp = JSON.parse(response.contentAsString)
@@ -96,8 +107,8 @@ class RemoteMethodExecutorControllerSpec extends Specification {
         println response.contentAsString
         resp.size() == 2
 
-        resp[0].response.data.some1 == 3
-        resp[1].response.data.some == 4
+        resp[0].response.data.result == 3
+        resp[1].response.data.result == 4
     }
 
 
@@ -110,7 +121,7 @@ class RemoteMethodExecutorControllerSpec extends Specification {
         then:
         println response.contentAsString
 
-        resp.response.data.res == 3
+        resp.response.data.result == 3
 
     }
 
@@ -136,19 +147,22 @@ class RemoteMethodExecutorControllerSpec extends Specification {
 @Remote
 class ExposedInvoiceService {
 
-    def doSomething(@P('param1') data) {
-        return [some1: ++data.value]
+    def doSomething(@P('param1') Integer val) {
+        ++val
+
     }
 
     def doSomethingMultiParam(p1, p2) {
-        return [res: p1 + p2]
+        p1 + p2
     }
+
+
 }
 
 class InvoiceService {
     @Remote
-    def doSomething(data) {
-        return [some: ++data.value]
+    def doSomething(val) {
+        ++val
     }
 
     @Remote(Operation.FETCH)
@@ -159,6 +173,11 @@ class InvoiceService {
 
     def notExposed(data) {
         return [some: 'value2']
+    }
+
+    @Remote
+    def doSomethingWithoutParam() {
+        'val'
     }
 
 }
