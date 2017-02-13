@@ -24,13 +24,12 @@ class RemoteApiJavaScriptProvider {
 
     String remoteApiTemplateText = 'var rmt=new function(){var emptyFn = function () {};return {${services}}}();'
     String serviceTemplateText = '${serviceName}:{${methods}}'
-    String functionSignatureTemplateText = 'function (${params} , callback)'
-    String noParamsFunctionSignatureTemplateText = 'function (callback)'
     String functionTemplateText = '''
 $methodName : $functionSignature {
-var cb=callback||emptyFn;
+var successCb=successCallback||emptyFn;
+var failureCb=failureCallback||emptyFn;
 var arg = {__params: [${params}]};
-isc.RemoteMethod.invoke('${serviceName}.${methodName}', arg, cb);
+isc.RemoteMethod.invoke('${serviceName}.${methodName}', arg, successCb,failureCb);
 }
 '''
 
@@ -61,9 +60,9 @@ isc.RemoteMethod.invoke('${serviceName}.${methodName}', arg, cb);
                         }
                         bindingModel.params = paramsMeta.join(',')
                         if (paramsMeta.empty) {
-                            bindingModel.functionSignature = 'function(callback)'
+                            bindingModel.functionSignature = 'function(successCallback,failureCallback)'
                         } else {
-                            bindingModel.functionSignature = "function(${bindingModel.params}, callback)".toString()
+                            bindingModel.functionSignature = "function(${bindingModel.params}, successCallback,failureCallback)".toString()
                         }
                         methodDefinitions << functionTemplate.make(bindingModel).toString()
                     }

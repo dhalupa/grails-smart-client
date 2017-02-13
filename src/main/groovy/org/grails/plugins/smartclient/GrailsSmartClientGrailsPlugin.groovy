@@ -1,6 +1,7 @@
 package org.grails.plugins.smartclient
 
 import grails.plugins.*
+import org.springframework.beans.factory.config.CustomScopeConfigurer
 
 class GrailsSmartClientGrailsPlugin extends Plugin {
 
@@ -32,6 +33,13 @@ This plugin enables easy client server integration when SmartClient JS library i
             }
             configProvider(ConfigProvider) { bean ->
                 bean.autowire = 'byName'
+            }
+            conversationScope(ConversationScope) {
+
+            }
+
+            conversationScopeConfigurer(CustomScopeConfigurer) {
+                scopes = [conversation: ref("conversationScope")]
             }
         }
     }

@@ -20,7 +20,7 @@ plugins {
     id "com.jfrog.bintray" version "1.2"
 }
 
-version "0.6.8"
+version "0.6.9"
 group "org.grails.plugins"
 
 apply plugin: 'maven-publish'
@@ -33,6 +33,9 @@ apply plugin: 'com.jfrog.artifactory'
 // Used for publishing to central repository, remove if not needed
 apply from: 'https://raw.githubusercontent.com/grails/grails-profile-repository/master/profiles/plugin/templates/grailsCentralPublishing.gradle'
 apply from: 'https://raw.githubusercontent.com/grails/grails-profile-repository/master/profiles/plugin/templates/bintrayPublishing.gradle'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: "com.jfrog.bintray"
+
 
 ext {
     grailsVersion = project.grailsVersion
@@ -60,6 +63,7 @@ dependencies {
     provided "org.springframework.boot:spring-boot-starter-actuator"
     provided "org.springframework.boot:spring-boot-autoconfigure"
     provided "org.springframework.boot:spring-boot-starter-tomcat"
+    profile "org.grails.profiles:web:3.1.7"
 
     provided "org.grails:grails-web-boot"
     provided "org.grails:grails-dependencies"
