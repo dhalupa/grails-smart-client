@@ -36,6 +36,8 @@ class RemoteMethodExecutor implements SmartClientResponseRenderer {
      * @return
      */
     def execute(request, locale) {
+        String conversationId = request.data.remove('__conversationId')
+        ConversationScope.CURRENT_CONVERSATION.set(conversationId)
         String[] methodLocator = StringUtils.split(request.data.remove('__method'), '.')
         String serviceName = StringUtils.uncapitalize(methodLocator[0])
         String methodName = methodLocator[1]

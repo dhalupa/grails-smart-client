@@ -19,7 +19,7 @@ class ConversationScope implements Scope {
     @Override
     Object get(String name, ObjectFactory<?> objectFactory) {
         String conversationId = CURRENT_CONVERSATION.get()
-        log.debug('Fetching from conversation for {}', conversationId)
+        log.debug('Fetching from conversation for {}, size:{}', conversationId, map.size())
         if (!map[conversationId]) {
             map[conversationId] = new ConversationHolder(timestamp: System.currentTimeMillis(), content: objectFactory.object)
         }
@@ -33,16 +33,24 @@ class ConversationScope implements Scope {
         return null
     }
 
+    void touch() {
+        String conversationId = CURRENT_CONVERSATION.get()
+        def holder = map[conversationId]
+        log.debug('Touch the conversation {} with content {}', conversationId, holder)
+        holder?.timestamp = System.currentTimeMillis()
+    }
+
+
     void removeExpired() {
         long current = System.currentTimeMillis()
         int i = 0
         map.keySet().each {
-            if ((current - map[it].timestamp) > 1000 * 60 * 60) {
+            if ((current - map[it].timestamp) > 1000 * 60 * 3) {
                 map.remove(it)
                 i++
             }
         }
-        log.info('Removed {} expired workspaces from conversation', i)
+        log.debug('Removed {} expired workspaces from conversation. {} still active', i, map.size())
     }
 
     @Override
