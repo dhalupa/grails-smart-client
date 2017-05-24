@@ -66,7 +66,7 @@ class RemoteMethodExecutor implements SmartClientResponseRenderer {
                         data = data['__params'].collect { it } as Object[]
                         break
                     case Operation.FETCH:
-                        ['startRow', 'endRow', 'textMatchStyle'].each {
+                        ['startRow', 'endRow', 'textMatchStyle', 'sortBy'].each {
                             if (!request.isNull(it)) {
                                 data."_${it}" = request[it]
                             }
