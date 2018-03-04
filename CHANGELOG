@@ -1,3 +1,7 @@
+-- 0.6.13
+
+- multiple beans can be put to conversation holder
+
 -- 0.6.12
 
 * sortBy request property propagated to criteria

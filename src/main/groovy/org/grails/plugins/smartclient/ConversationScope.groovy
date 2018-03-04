@@ -20,12 +20,15 @@ class ConversationScope implements Scope {
     Object get(String name, ObjectFactory<?> objectFactory) {
         String conversationId = CURRENT_CONVERSATION.get()
         log.debug('Fetching from conversation for {}, size:{}', conversationId, map.size())
-        if (!map[conversationId]) {
-            map[conversationId] = new ConversationHolder(timestamp: System.currentTimeMillis(), content: objectFactory.object)
+        if (map[conversationId] == null) {
+            map[conversationId] = new ConversationHolder()
+        }
+        if (map[conversationId].content[name] == null) {
+            map[conversationId].content[name] = objectFactory.object
         }
         def holder = map[conversationId]
         holder.timestamp = System.currentTimeMillis()
-        return holder.content
+        return holder.content[name]
     }
 
     @Override
@@ -69,8 +72,8 @@ class ConversationScope implements Scope {
     }
 
     static class ConversationHolder {
-        long timestamp
-        def content
+        long timestamp = System.currentTimeMillis()
+        Map content = [:]
 
     }
 }
