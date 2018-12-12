@@ -1,1 +1,2 @@
 grails.dev.commands.ApplicationCommand=org.grails.plugins.smartclient.CreateRemoteApiCommand
+grails.core.ArtefactHandler=org.grails.plugins.smartclient.DataSourceHandlerArtefactHandler

@@ -1,5 +1,7 @@
 package org.grails.plugins.smartclient
 
+import grails.core.ArtefactHandler
+import grails.core.GrailsClass
 import grails.plugins.*
 import org.springframework.beans.factory.config.CustomScopeConfigurer
 
@@ -23,6 +25,11 @@ This plugin enables easy client server integration when SmartClient JS library i
     def license = "APACHE"
     def scm = [url: "https://github.com/dhalupa/grails-smart-client"]
 
+    List<ArtefactHandler> artefacts = [DataSourceHandlerArtefactHandler]
+
+    def watchedResources ="file:./grails-app/dataSourceHandlers/**/*DataSourceHandler.groovy"
+
+
     Closure doWithSpring() {
         { ->
             remoteMethodExecutor(RemoteMethodExecutor) { bean ->
@@ -40,6 +47,12 @@ This plugin enables easy client server integration when SmartClient JS library i
 
             conversationScopeConfigurer(CustomScopeConfigurer) {
                 scopes = [conversation: ref("conversationScope")]
+            }
+
+            grailsApplication.getArtefacts('dataSourceHandler').each { GrailsClass dataSourceHandlerClass ->
+                "smartClient${dataSourceHandlerClass.shortName}"(dataSourceHandlerClass.clazz) { bean ->
+                    bean.autowire = "byName"
+                }
             }
         }
     }
