@@ -25,9 +25,7 @@ This plugin enables easy client server integration when SmartClient JS library i
     def license = "APACHE"
     def scm = [url: "https://github.com/dhalupa/grails-smart-client"]
 
-    List<ArtefactHandler> artefacts = [DataSourceHandlerArtefactHandler]
 
-    def watchedResources ="file:./grails-app/dataSourceHandlers/**/*DataSourceHandler.groovy"
 
 
     Closure doWithSpring() {
