@@ -1,3 +1,5 @@
+package org.grails.plugins.smartclient
+
 class SmartUrlMappings {
 
     static mappings = {
