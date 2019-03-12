@@ -1,5 +1,7 @@
 package org.grails.plugins.smartclient.builder
 
+import groovy.util.logging.Slf4j
+import org.apache.commons.lang3.StringUtils
 import org.grails.plugins.smartclient.annotation.Remote
 import org.springframework.aop.framework.AopProxyUtils
 import org.springframework.util.ReflectionUtils
@@ -9,6 +11,7 @@ import java.lang.reflect.Method
 /**
  * Created by dhalupa on 4/8/15.
  */
+@Slf4j
 abstract class BaseDataSourceHandlerExecutionService {
     def grailsApplication
     def messageSource
@@ -62,7 +65,7 @@ abstract class BaseDataSourceHandlerExecutionService {
     }
 
     protected def resolveService(String name) {
-        grailsApplication.mainContext.getBean(name)
+        grailsApplication.mainContext.getBean(StringUtils.uncapitalize(name))
     }
 
 
@@ -70,11 +73,11 @@ abstract class BaseDataSourceHandlerExecutionService {
         def model = dataSource.fetch(request.data)
         return ['response':
                         [
-                                status: 0,
-                                startRow: 0,
-                                endRow: model.size(),
+                                status   : 0,
+                                startRow : 0,
+                                endRow   : model.size(),
                                 totalRows: model.size(),
-                                data: model
+                                data     : model
                         ]
         ]
     }

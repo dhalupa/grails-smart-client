@@ -18,7 +18,7 @@ plugins {
 
 }
 
-version "0.6.16"
+version "0.6.17"
 group "org.grails.plugins"
 
 apply plugin: 'eclipse'
@@ -62,6 +62,9 @@ dependencies {
     provided "org.grails:grails-web-boot"
     provided "org.grails:grails-dependencies"
     provided 'javax.servlet:javax.servlet-api:3.1.0'
+
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
+
 
     testCompile "org.grails:grails-plugin-testing"
 

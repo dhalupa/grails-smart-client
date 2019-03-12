@@ -21,6 +21,7 @@ import java.beans.PropertyDescriptor
 import java.lang.annotation.Annotation
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import org.apache.commons.lang3.StringUtils
 
 /**
  * Service responsible to build definition of datasources and remote API from registered datasource artefacts
@@ -194,7 +195,8 @@ $functionName: function ($params , callback) { alert('${message}')}'''
     }
 
     private def buildServiceDataSourceDefinition = { serviceClass, lang ->
-        def dsInfo = [dataURL: 'datasource', ID: "${serviceClass.logicalPropertyName}Service", dataFormat: 'json']
+        def serviceId = StringUtils.capitalize("${serviceClass.logicalPropertyName}Service")
+        def dsInfo = [dataURL: 'datasource', ID: serviceId, dataFormat: 'json']
         dsInfo.progressInfo = buildProgressInfo(serviceClass.getClazz(), lang, dsInfo.ID)
         dsInfo.operationBindings = [buildOperationDefinition.call('custom', dsInfo)]
         dsInfo.jsonPrefix = this.jsonPrefix
