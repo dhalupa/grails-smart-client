@@ -1,8 +1,10 @@
 package org.grails.plugins.smartclient
 
+import grails.converters.JSON
 import grails.core.ArtefactHandler
 import grails.core.GrailsClass
 import grails.plugins.*
+import org.grails.plugins.smartclient.marshall.RawJavascript
 import org.springframework.beans.factory.config.CustomScopeConfigurer
 
 class GrailsSmartClientGrailsPlugin extends Plugin {
@@ -27,11 +29,20 @@ This plugin enables easy client server integration when SmartClient JS library i
 
     List<ArtefactHandler> artefacts = [DataSourceHandlerArtefactHandler]
 
-    def watchedResources ="file:./grails-app/dataSourceHandlers/**/*DataSourceHandler.groovy"
+    def watchedResources = "file:./grails-app/dataSourceHandlers/**/*DataSourceHandler.groovy"
 
 
     Closure doWithSpring() {
+
         { ->
+            csrfTokenHandlerBean(CsrfTokenHandler) { bean ->
+                bean.scope = 'session'
+            }
+            csrfTokenHandler(org.springframework.aop.scope.ScopedProxyFactoryBean) {
+                targetBeanName = 'csrfTokenHandlerBean'
+                proxyTargetClass = true
+            }
+
             remoteMethodExecutor(RemoteMethodExecutor) { bean ->
                 bean.autowire = 'byName'
             }
@@ -57,5 +68,10 @@ This plugin enables easy client server integration when SmartClient JS library i
         }
     }
 
-
+    @Override
+    void doWithApplicationContext() {
+        JSON.registerObjectMarshaller(RawJavascript, { RawJavascript value, JSON converter ->
+            converter.writer.value(value.content)
+        })
+    }
 }

@@ -9,10 +9,12 @@ import grails.util.GrailsClassUtils
 import groovy.text.SimpleTemplateEngine
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.core.artefact.ServiceArtefactHandler
+import org.grails.io.support.ClassPathResource
 import org.grails.plugins.smartclient.annotation.P
 import org.grails.plugins.smartclient.annotation.Progress
 import org.grails.plugins.smartclient.annotation.Remote
 import org.grails.plugins.smartclient.builder.FieldsDefinitionBuilder
+import org.grails.plugins.smartclient.marshall.RawJavascript
 import org.springframework.context.MessageSource
 import org.springframework.context.NoSuchMessageException
 
@@ -101,18 +103,13 @@ $functionName: function ($params , callback) { alert('${message}')}'''
                     buildDataSourceDefinition(dataSourceHandlerClass, lang)
                 }
             }.findAll { it }
-            def remoteServices = grailsApplication.getArtefacts(ServiceArtefactHandler.TYPE).findAll { GrailsServiceClass sc ->
-                def clazz = sc.getClazz()
-                def res = clazz.getAnnotation(Remote) != null || clazz.methods.find { it.getAnnotation(Remote) } != null
-                res
-            }
-            d += remoteServices.collect { buildServiceDataSourceDefinition(it, lang) }
             StringBuilder b = new StringBuilder()
             d.each {
                 String c = new JSON(it as Map).toString()
                 b.append("isc.RestDataSource.create(${c});")
             }
-            b.append(REMOTE_DEF.replace("\n", "").replace("\r", ""))
+            ClassPathResource res = new ClassPathResource('js/DeprecatedRemoteMethodExecutor.js')
+            b.append(res.inputStream.getText('UTF-8'))
             cachedDefinitions[lang] = b.toString()
         }
         cachedDefinitions[lang]
@@ -189,20 +186,12 @@ $functionName: function ($params , callback) { alert('${message}')}'''
         dsInfo.fields = buildFieldsDefinition(dsClass)
         dsInfo.progressInfo = buildProgressInfo(dsClass.getClazz(), lang, dsInfo.ID)
         dsInfo.operationBindings = buildOperationsDefinition(dsClass, dsInfo)
+    //    dsInfo.transformRequest = buildTransformRequest()
         dsInfo.jsonPrefix = this.jsonPrefix
         dsInfo.jsonSufix = this.jsonSuffix
         dsInfo
     }
 
-    private def buildServiceDataSourceDefinition = { serviceClass, lang ->
-        def serviceId = StringUtils.capitalize("${serviceClass.logicalPropertyName}Service")
-        def dsInfo = [dataURL: 'datasource', ID: serviceId, dataFormat: 'json']
-        dsInfo.progressInfo = buildProgressInfo(serviceClass.getClazz(), lang, dsInfo.ID)
-        dsInfo.operationBindings = [buildOperationDefinition.call('custom', dsInfo)]
-        dsInfo.jsonPrefix = this.jsonPrefix
-        dsInfo.jsonSufix = this.jsonSuffix
-        dsInfo
-    }
 
     private def buildProgressInfo = { Class clazz, String lang, String dsID ->
         Locale locale = new Locale(lang)
@@ -219,6 +208,14 @@ $functionName: function ($params , callback) { alert('${message}')}'''
         operations.collect {
             buildOperationDefinition.call(it, dsInfo)
         }
+    }
+
+    private def buildTransformRequest() {
+        new RawJavascript('''function (dsRequest) {
+        dsRequest.httpHeaders = dsRequest.httpHeaders || {};
+        if(window._scCsrfToken) dsRequest.httpHeaders['Csrf-Token']=window._scCsrfToken;
+        return this.Super("transformRequest", arguments);
+    }''')
     }
 
     private def buildOperationDefinition = { operation, dsInfo ->

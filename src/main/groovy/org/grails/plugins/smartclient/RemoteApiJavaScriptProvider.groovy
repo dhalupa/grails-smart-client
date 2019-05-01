@@ -3,6 +3,7 @@ package org.grails.plugins.smartclient
 import grails.core.GrailsServiceClass
 import groovy.text.SimpleTemplateEngine
 import org.apache.commons.lang.StringUtils
+import org.grails.io.support.ClassPathResource
 import org.grails.plugins.smartclient.annotation.Operation
 import org.grails.plugins.smartclient.annotation.P
 import org.grails.plugins.smartclient.annotation.Remote
@@ -29,12 +30,15 @@ $methodName : $functionSignature {
 var successCb=successCallback||emptyFn;
 var failureCb=failureCallback||emptyFn;
 var arg = {__params: [${params}]};
-isc.RemoteMethod.invoke('${serviceName}.${methodName}', arg, successCb,failureCb);
+isc.RemoteMethodExecutor.invoke('${serviceName}.${methodName}', arg, successCb,failureCb);
 }
 '''
 
 
     String createRemoteAPI() {
+        StringBuilder builder = new StringBuilder()
+        ClassPathResource res = new ClassPathResource('js/RemoteMethodExecutor.js')
+        builder.append(res.inputStream.getText('UTF-8'))
         def engine = new SimpleTemplateEngine()
         def remoteApiTemplate = engine.createTemplate(StringUtils.replaceChars(remoteApiTemplateText, '\n', ''))
         def serviceTemplate = engine.createTemplate(StringUtils.replaceChars(serviceTemplateText, '\n', ''))
@@ -72,7 +76,8 @@ isc.RemoteMethod.invoke('${serviceName}.${methodName}', arg, successCb,failureCb
             }
         }
         bindingModel.services = serviceDefinitions.join(',')
-        remoteApiTemplate.make(bindingModel).toString()
+        builder.append(remoteApiTemplate.make(bindingModel).toString())
+        builder.toString()
 
     }
 

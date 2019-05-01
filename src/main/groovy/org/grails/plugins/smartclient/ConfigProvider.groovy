@@ -10,8 +10,12 @@ class ConfigProvider {
         grailsApplication.config.grails.plugin.smartclient.remoteApiFileName ?: 'grails-app/assets/javascripts/RemoteApi.js'
     }
 
+    String getSmartMvcFileName() {
+        grailsApplication.config.grails.plugin.smartclient.smartMvcFileName ?: 'grails-app/assets/javascripts/SmartMvc.js'
+    }
+
     def getConverterConfig() {
-        grailsApplication.config.grails.plugin.smartclient.converterConfig?:'smart'
+        grailsApplication.config.grails.plugin.smartclient.converterConfig ?: 'smart'
     }
 
     String getJsonPrefix() {
