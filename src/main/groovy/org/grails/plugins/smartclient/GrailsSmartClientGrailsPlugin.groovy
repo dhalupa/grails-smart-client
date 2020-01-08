@@ -49,7 +49,7 @@ This plugin enables easy client server integration when SmartClient JS library i
             supportingJavaScriptProvider(RemoteApiJavaScriptProvider) { bean ->
                 bean.autowire = 'byName'
             }
-            configProvider(ConfigProvider) { bean ->
+            smartClientConfigProvider(ConfigProvider) { bean ->
                 bean.autowire = 'byName'
             }
             conversationScope(ConversationScope) {

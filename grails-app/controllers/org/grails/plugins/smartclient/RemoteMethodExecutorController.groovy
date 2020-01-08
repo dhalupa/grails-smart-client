@@ -7,7 +7,7 @@ import org.springframework.web.servlet.support.RequestContextUtils
 @Slf4j
 class RemoteMethodExecutorController {
     def remoteMethodExecutor
-    def configProvider
+    def smartClientConfigProvider
 
     def index() {
         def locale = RequestContextUtils.getLocale(request)
@@ -20,17 +20,17 @@ class RemoteMethodExecutorController {
             model = remoteMethodExecutor.execute(json, locale)
         }
 
-        if (configProvider.converterConfig) {
-            JSON.use(configProvider.converterConfig, {
-                render(text: "${configProvider.jsonPrefix}${model as JSON}${configProvider.jsonSuffix}", contentType: 'application/json')
+        if (smartClientConfigProvider.converterConfig) {
+            JSON.use(smartClientConfigProvider.converterConfig, {
+                render(text: "${smartClientConfigProvider.jsonPrefix}${model as JSON}${smartClientConfigProvider.jsonSuffix}", contentType: 'application/json')
             })
         } else {
-            render(text: "${configProvider.jsonPrefix}${model as JSON}${configProvider.jsonSuffix}", contentType: 'application/json')
+            render(text: "${smartClientConfigProvider.jsonPrefix}${model as JSON}${smartClientConfigProvider.jsonSuffix}", contentType: 'application/json')
         }
     }
 
     def init() {
-        render(view: 'js', model: [jsonPrefix: configProvider.jsonPrefix, jsonSufix: configProvider.jsonSuffix], contentType: 'application/javascript')
+        render(view: 'js', model: [jsonPrefix: smartClientConfigProvider.jsonPrefix, jsonSufix: smartClientConfigProvider.jsonSuffix], contentType: 'application/javascript')
     }
 
 

@@ -7,7 +7,7 @@ isc.defineClass('RemoteMethodDataSource', 'RestDataSource').addProperties({
     dataURL: 'remoteMethodExecutor',
     dataFormat: 'json',
     jsonPrefix: window.scJsonPrefix,
-    jsonSuffix: window.scJsonSufix,
+    jsonSuffix: window.scJsonSuffix,
     fetchMethod: null,
     updateMethod: null,
     addMethod: null,
@@ -71,7 +71,7 @@ isc.RestDataSource.create({
     "progressInfo": {},
     "operationBindings": [{"operationType": "custom", "dataProtocol": "postMessage"}],
     "jsonPrefix": window.scJsonPrefix,
-    "jsonSuffix": window.scJsonSufix,
+    "jsonSuffix": window.scJsonSuffix,
     transformResponse: function (dsResponse, dsRequest, data) {
         var dsResponse = this.Super("transformResponse", arguments);
         if (dsResponse.httpResponseCode == 401) {

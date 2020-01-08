@@ -19,7 +19,7 @@ class ConfigProvider {
     }
 
     String getJsonPrefix() {
-        return grailsApplication.config.grails.plugin.smartclient.debug ? '' : "<SCRIPT>//\\'\"]]>>isc_JSONResponseStart>>"
+        return grailsApplication.config.grails.plugin.smartclient.debug ? '' : "<SCRIPT>//'\"]]>>isc_JSONResponseStart>>"
     }
 
     String getJsonSuffix() {

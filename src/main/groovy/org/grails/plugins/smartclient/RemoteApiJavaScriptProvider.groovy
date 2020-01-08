@@ -19,7 +19,7 @@ import java.lang.reflect.Parameter
  * @Denis Halupa
  */
 class RemoteApiJavaScriptProvider {
-    def configProvider
+    def smartClientConfigProvider
     def grailsApplication
 
 

@@ -5,7 +5,6 @@ import grails.test.mixin.TestFor
 import org.grails.plugins.smartclient.annotation.Operation
 import org.grails.plugins.smartclient.annotation.P
 import org.grails.plugins.smartclient.annotation.Remote
-import spock.lang.IgnoreRest
 import spock.lang.Specification
 
 /**
@@ -24,7 +23,7 @@ class RemoteMethodExecutorControllerSpec extends Specification {
             getJsonSuffix() >> ''
             getConverterConfig() >> null
         }
-        controller.configProvider = configProvider
+        controller.smartClientConfigProvider = configProvider
         controller.remoteMethodExecutor = new RemoteMethodExecutor(grailsApplication: grailsApplication)
     }
 
