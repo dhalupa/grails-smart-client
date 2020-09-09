@@ -1,7 +1,7 @@
 package org.grails.plugins.smartclient
 
 import grails.converters.JSON
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import grails.util.GrailsClassUtils
 
 
 /**
