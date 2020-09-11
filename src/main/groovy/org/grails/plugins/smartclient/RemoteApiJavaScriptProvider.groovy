@@ -1,11 +1,13 @@
 package org.grails.plugins.smartclient
 
+import grails.converters.JSON
 import grails.core.GrailsServiceClass
 import groovy.text.SimpleTemplateEngine
 import org.apache.commons.lang.StringUtils
 import org.grails.io.support.ClassPathResource
 import org.grails.plugins.smartclient.annotation.Operation
 import org.grails.plugins.smartclient.annotation.P
+import org.grails.plugins.smartclient.annotation.Progress
 import org.grails.plugins.smartclient.annotation.Remote
 
 import java.beans.Introspector
@@ -28,9 +30,8 @@ class RemoteApiJavaScriptProvider {
     String functionTemplateText = '''
 $methodName : $functionSignature {
 var successCb=successCallback||emptyFn;
-var failureCb=failureCallback||emptyFn;
 var arg = {__params: [${params}]};
-isc.RemoteMethodExecutor.invoke('${serviceName}.${methodName}', arg, successCb,failureCb);
+isc.RemoteMethodExecutor.invoke('${serviceName}.${methodName}', arg, successCb,${requestProperties});
 }
 '''
 
@@ -66,8 +67,18 @@ isc.RemoteMethodExecutor.invoke('${serviceName}.${methodName}', arg, successCb,f
                         if (paramsMeta.empty) {
                             bindingModel.functionSignature = 'function(successCallback,failureCallback)'
                         } else {
-                            bindingModel.functionSignature = "function(${bindingModel.params}, successCallback,failureCallback)".toString()
+                            bindingModel.functionSignature = "function(${bindingModel.params}, successCallback)".toString()
                         }
+                        def progress = m.getAnnotation(Progress)
+                        StringBuilder rpBldr = new StringBuilder()
+                        if (progress != null) {
+                            rpBldr.append("{ prompt: isc.message('${progress.value()}'),")
+                            rpBldr.append("promptStyle: '${progress.style()}' }")
+
+                        } else {
+                            rpBldr.append("{showPrompt: false }")
+                        }
+                        bindingModel.requestProperties = rpBldr.toString()
                         methodDefinitions << functionTemplate.make(bindingModel).toString()
                     }
                 }

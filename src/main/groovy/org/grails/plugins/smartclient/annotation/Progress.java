@@ -20,4 +20,11 @@ public @interface Progress {
      * @return
      */
     String value() default "org.grails.plugins.smartclient.progress";
+
+    /**
+     * A key for the progress style. Default is 'dialog'. Possible value is 'cursor'
+     *
+     * @return
+     */
+    String style() default "dialog";
 }

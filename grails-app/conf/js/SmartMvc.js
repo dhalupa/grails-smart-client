@@ -1,7 +1,7 @@
 // SmartMvc.js 0.1
 // (c) Denis Halupa
 // SmartMvc may be freely distributed under the MIT license.
-
+var msg = msg || {}
 
 /**
  * Shorthand for getting datasource instances
@@ -42,6 +42,19 @@ isc.namespace = function () {
         });
     });
     return o;
+}
+/**
+ * Resolves a message for dotted notation string
+ * @param code
+ * @return {{String}}
+ */
+isc.message = function (code) {
+    var parts = code.split('.');
+    var res = msg;
+    _.each(parts, function (p) {
+        res = res[p];
+    });
+    return res;
 }
 
 
