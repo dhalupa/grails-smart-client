@@ -4,7 +4,14 @@ import grails.converters.JSON
 import grails.core.ArtefactHandler
 import grails.core.GrailsClass
 import grails.plugins.*
+import org.apache.commons.lang.WordUtils
+import org.grails.plugins.smartclient.marshall.AsyncRemoteMethodResponseSmartJsonMarshaller
+import org.grails.plugins.smartclient.marshall.FetchResponseSmartJsonMarshaller
 import org.grails.plugins.smartclient.marshall.RawJavascript
+import org.grails.plugins.smartclient.marshall.RawJavascriptMarshaller
+import org.grails.plugins.smartclient.marshall.RemoteMethodResponseSmartJsonMarshaller
+import org.grails.plugins.smartclient.marshall.SmartJsonMarshaller
+import org.grails.plugins.smartclient.marshall.UpdateResponseSmartJsonMarshaller
 import org.springframework.beans.factory.config.CustomScopeConfigurer
 
 class GrailsSmartClientGrailsPlugin extends Plugin {
@@ -60,6 +67,14 @@ This plugin enables easy client server integration when SmartClient JS library i
                 scopes = [conversation: ref("conversationScope")]
             }
 
+            def marshallers = [AsyncRemoteMethodResponseSmartJsonMarshaller, FetchResponseSmartJsonMarshaller, RawJavascriptMarshaller,
+                               RemoteMethodResponseSmartJsonMarshaller, UpdateResponseSmartJsonMarshaller]
+            marshallers.each { clazz ->
+                "${WordUtils.uncapitalize(clazz.simpleName)}"(clazz) { bean ->
+                    bean.autowire = "byName"
+                }
+            }
+
             grailsApplication.getArtefacts('DataSourceHandler').each { GrailsClass dataSourceHandlerClass ->
                 "smartClient${dataSourceHandlerClass.shortName}"(dataSourceHandlerClass.clazz) { bean ->
                     bean.autowire = "byName"
@@ -70,8 +85,13 @@ This plugin enables easy client server integration when SmartClient JS library i
 
     @Override
     void doWithApplicationContext() {
-        JSON.registerObjectMarshaller(RawJavascript, { RawJavascript value, JSON converter ->
-            converter.writer.value(value.content)
-        })
+
+        JSON.use('smart') {
+            applicationContext.getBeanNamesForType(SmartJsonMarshaller).each {
+                JSON.registerObjectMarshaller(applicationContext.getBean(it))
+            }
+        }
+
+
     }
 }

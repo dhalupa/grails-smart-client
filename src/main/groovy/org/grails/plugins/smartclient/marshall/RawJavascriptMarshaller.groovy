@@ -7,7 +7,7 @@ import org.grails.web.converters.marshaller.ObjectMarshaller
 /**
  * @author Denis Halupa
  */
-class RawJavascriptMarshaller implements ObjectMarshaller<JSON> {
+class RawJavascriptMarshaller implements SmartJsonMarshaller {
     @Override
     boolean supports(Object object) {
         return object instanceof RawJavascriptMarshaller
