@@ -18,7 +18,7 @@ plugins {
 
 }
 
-version "0.6.22"
+version "0.6.23"
 group "org.grails.plugins"
 
 apply plugin: 'eclipse'

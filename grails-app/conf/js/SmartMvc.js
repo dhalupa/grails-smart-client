@@ -71,7 +71,7 @@ _.extend(isc, function () {
             config = config || {};
 
             var lines = ['arguments[1].initWidget=function(){'];
-            _.each(['members', 'items', 'tabs', 'sections', 'tiles', 'controls'], function (el) {
+            _.each(['members', 'items', 'tabs', 'sections', 'tiles', 'controls','panes'], function (el) {
                 if (_.isObject(config[el])) {
                     config[el] = _.isArray(config[el]) ? config[el] : [config[el]]
                     lines.push(isc.formatString('this.{0} = isc.WidgetFactory.create(this.{0});', el))
@@ -224,7 +224,7 @@ var mvc_findLocalMixin = {
                 }
             }
         }
-        var locators = ['children', 'items', 'members', 'tabs', 'sections', 'tiles', 'controls']
+        var locators = ['children', 'items', 'members', 'tabs', 'sections', 'tiles', 'controls','panes']
         while (nodes.length) {
             var newNodes = [];
             for (var i = 0; i < nodes.length; i++) {
