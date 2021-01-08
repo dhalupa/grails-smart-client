@@ -1,3 +1,5 @@
+-- 0.6.24
+- contextProvider methods executed for sysc runner also
 -- 0.6.23
 - panes added as child collection to SmartMvc.js
 -- 0.6.19

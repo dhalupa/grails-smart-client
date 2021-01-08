@@ -45,7 +45,9 @@ class LongOperationsRunner {
                 longOperationContextProvider.clearThreadLocalData()
             }
         } else {
+            longOperationContextProvider.storeThreadLocalData(config)
             syncWorker.call(uuid, operation)
+            longOperationContextProvider.clearThreadLocalData()
         }
         uuid
     }
