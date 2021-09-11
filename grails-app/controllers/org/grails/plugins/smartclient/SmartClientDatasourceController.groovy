@@ -33,10 +33,10 @@ class SmartClientDatasourceController {
         try {
             if (converterConfig) {
                 JSON.use(converterConfig, {
-                    render(text: "${jsonPrefix}${model as JSON}${jsonSufix}", contentType: 'application/json')
+                    render(text: "${jsonPrefix}${model as JSON}${jsonSufix}".toString(), contentType: 'application/json')
                 })
             } else {
-                render(text: "${jsonPrefix}${model as JSON}${jsonSufix}", contentType: 'application/json')
+                render(text: "${jsonPrefix}${model as JSON}${jsonSufix}".toString(), contentType: 'application/json')
 
             }
         } finally {
