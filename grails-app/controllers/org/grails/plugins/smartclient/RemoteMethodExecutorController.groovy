@@ -22,10 +22,10 @@ class RemoteMethodExecutorController {
 
         if (smartClientConfigProvider.converterConfig) {
             JSON.use(smartClientConfigProvider.converterConfig, {
-                render(text: "${smartClientConfigProvider.jsonPrefix}${model as JSON}${smartClientConfigProvider.jsonSuffix}", contentType: 'application/json')
+                render(text: "${smartClientConfigProvider.jsonPrefix}${model as JSON}${smartClientConfigProvider.jsonSuffix}".toString(), contentType: 'application/json')
             })
         } else {
-            render(text: "${smartClientConfigProvider.jsonPrefix}${model as JSON}${smartClientConfigProvider.jsonSuffix}", contentType: 'application/json')
+            render(text: "${smartClientConfigProvider.jsonPrefix}${model as JSON}${smartClientConfigProvider.jsonSuffix}".toString(), contentType: 'application/json')
         }
     }
 
