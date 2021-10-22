@@ -31,14 +31,16 @@ class SmartClientDatasourceController {
         def jsonPrefix = smartClientDataSourceDefinitionService.jsonPrefix
         def jsonSufix = smartClientDataSourceDefinitionService.jsonSuffix
         try {
+            StringBuilder builder = new StringBuilder(jsonPrefix)
             if (converterConfig) {
                 JSON.use(converterConfig, {
-                    render(text: "${jsonPrefix}${model as JSON}${jsonSufix}", contentType: 'application/json')
+                    builder.append(new JSON(model).toString())
                 })
             } else {
-                render(text: "${jsonPrefix}${model as JSON}${jsonSufix}", contentType: 'application/json')
-
+                builder.append(new JSON(model).toString())
             }
+            builder.append(jsonSufix)
+            render(text: builder.toString(), contentType: 'application/json')
         } finally {
             def callback = grailsApplication.config.grails.plugin.smartclient.cleanupCallback
             if (callback) {

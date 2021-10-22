@@ -19,14 +19,17 @@ class RemoteMethodExecutorController {
         } else {
             model = remoteMethodExecutor.execute(json, locale)
         }
+        StringBuilder builder = new StringBuilder(smartClientConfigProvider.jsonPrefix)
 
         if (smartClientConfigProvider.converterConfig) {
             JSON.use(smartClientConfigProvider.converterConfig, {
-                render(text: "${smartClientConfigProvider.jsonPrefix}${model as JSON}${smartClientConfigProvider.jsonSuffix}", contentType: 'application/json')
+                builder.append(new JSON(model).toString())
             })
         } else {
-            render(text: "${smartClientConfigProvider.jsonPrefix}${model as JSON}${smartClientConfigProvider.jsonSuffix}", contentType: 'application/json')
+            builder.append(smartClientConfigProvider.jsonSuffix)
         }
+        builder.append(smartClientConfigProvider.jsonSuffix)
+        render(text: builder.toString(), contentType: 'application/json')
     }
 
     def init() {
