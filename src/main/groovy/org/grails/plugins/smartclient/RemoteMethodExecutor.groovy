@@ -1,16 +1,16 @@
 package org.grails.plugins.smartclient
 
-import groovy.util.logging.Log4j
+
+import groovy.util.logging.Slf4j
 import org.apache.commons.lang.StringUtils
 import org.grails.plugins.smartclient.annotation.Operation
 import org.grails.plugins.smartclient.annotation.Remote
-import org.grails.web.json.JSONObject
 import org.springframework.aop.framework.AopProxyUtils
 
 /**
  * Created by dhalupa on 29.04.16..
  */
-@Log4j
+@Slf4j
 class RemoteMethodExecutor implements SmartClientResponseRenderer {
     def grailsApplication
     def messageSource
