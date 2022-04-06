@@ -1,6 +1,6 @@
 package org.grails.plugins.smartclient
 
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 import org.grails.plugins.smartclient.builder.BaseDataSourceHandlerExecutionService
 
 /**
