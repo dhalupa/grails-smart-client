@@ -12,4 +12,8 @@ interface LongOperationContextProvider {
     void clearThreadLocalData()
 
     String getMessage(String action, Object... args)
+
+    void executeAsync(Closure asyncWorker)
+
+
 }

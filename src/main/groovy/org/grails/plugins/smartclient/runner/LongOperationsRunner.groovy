@@ -41,7 +41,8 @@ class LongOperationsRunner {
         if (async) {
             Dataflow.task {
                 longOperationContextProvider.storeThreadLocalData(config)
-                asyncWorker.call(uuid, operation)
+                Closure worker = asyncWorker.curry(uuid, operation)
+                longOperationContextProvider.executeAsync(worker)
                 longOperationContextProvider.clearThreadLocalData()
             }
         } else {
@@ -88,21 +89,21 @@ class LongOperationsRunner {
 
     }
 
-    private def asyncWorker = { String uuid, Closure operation ->
+    private def asyncWorker = { String uuid, Closure operation, transactionStatus ->
         uuidHolder.set(uuid)
-        withNewTransaction { TransactionStatus status ->
-            try {
-                operation.call(status)
-            } catch (ActionCanceledException ace) {
-                status.setRollbackOnly()
-            } catch (Throwable e) {
-                statusMap[uuid].error = e.message
-                statusMap[uuid].finished = true
-                log.error(e.message, e)
-                status.setRollbackOnly()
-            }
+        try {
+            operation.call(transactionStatus)
             statusMap[uuid].finished = true
+        } catch (ActionCanceledException ace) {
+            transactionStatus.setRollbackOnly()
+        } catch (Throwable e) {
+            statusMap[uuid].error = e.message
+            statusMap[uuid].finished = true
+            log.error(e.message, e)
+            transactionStatus.setRollbackOnly()
         }
+
+
     }
 
     private void withTransaction(Closure callable) {

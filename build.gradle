@@ -14,20 +14,21 @@ buildscript {
 }
 
 plugins {
-    id "io.spring.dependency-management" version "0.5.4.RELEASE"
+
+    id "io.spring.dependency-management" version "1.0.11.RELEASE"
 
 }
 
-version "0.6.27"
+version "0.6.28"
 group "org.grails.plugins"
 
 apply plugin: 'eclipse'
 apply plugin: 'idea'
-apply plugin: "spring-boot"
+//apply plugin: "spring-boot"
 apply plugin: "org.grails.grails-plugin"
 apply plugin: "org.grails.grails-gsp"
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'maven-publish'
+//apply plugin: 'io.spring.dependency-management'
+//apply plugin: 'maven-publish'
 
 
 
@@ -63,6 +64,8 @@ dependencies {
     provided "org.grails:grails-dependencies"
     provided 'javax.servlet:javax.servlet-api:3.1.0'
 
+    compile group: 'org.grails', name: 'grails-async-gpars', version: '3.3.2'
+
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
     compile "org.grails:grails-datastore-gorm-support"
     compile group: 'org.grails', name: 'grails-async-gpars'
@@ -80,23 +83,23 @@ task wrapper(type: Wrapper) {
 }
 
 //can not be moved to parent project because dependencyManagement node will not be removed in that case
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            //required in order to remove all dependencies without version from pom
-            pom.withXml {
-                Node pomNode = asNode()
-                pomNode.dependencyManagement.replaceNode {}
-                pomNode.dependencies.dependency.findAll {
-                    it.version.text().isEmpty()
-                }.each {
-                    it.replaceNode {}
-                }
-            }
-            from components.java
-        }
-    }
-}
+//publishing {
+//    publications {
+//        mavenJava(MavenPublication) {
+//            //required in order to remove all dependencies without version from pom
+//            pom.withXml {
+//                Node pomNode = asNode()
+//                pomNode.dependencyManagement.replaceNode {}
+//                pomNode.dependencies.dependency.findAll {
+//                    it.version.text().isEmpty()
+//                }.each {
+//                    it.replaceNode {}
+//                }
+//            }
+//            from components.java
+//        }
+//    }
+//}
 
 
 
