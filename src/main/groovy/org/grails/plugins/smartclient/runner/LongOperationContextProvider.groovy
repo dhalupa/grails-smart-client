@@ -15,5 +15,7 @@ interface LongOperationContextProvider {
 
     void executeAsync(Closure asyncWorker)
 
+    def executeSync(Closure syncWorker)
+
 
 }

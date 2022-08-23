@@ -2,7 +2,7 @@ package org.grails.plugins.smartclient
 
 import grails.converters.JSON
 import grails.util.GrailsClassUtils
-
+import org.grails.plugins.smartclient.runner.LongOperationContextProvider
 
 /**
  * Controller responsible for json communication with SmartClient datasource instance
@@ -15,12 +15,9 @@ class SmartClientDatasourceController {
     def smartClientDataSourceDefinitionService
     def smartClientDataSourceHandlerExecutionService
     def nonTransactionalSmartClientDataSourceHandlerExecutionService
+    LongOperationContextProvider longOperationContextProvider
 
-    /**
-     * Entry point for all SmartClient datasource operations
-     * @return
-     */
-    def serve() {
+    Closure serveWorker = {
         def model
         if (request.JSON.transaction) {
             model = smartClientDataSourceHandlerExecutionService.executeTransaction(request.JSON.transaction)
@@ -46,6 +43,16 @@ class SmartClientDatasourceController {
             if (callback) {
                 callback.call()
             }
+        }
+    }
+
+    /**
+     * Entry point for all SmartClient datasource operations
+     * @return
+     */
+    def serve() {
+        longOperationContextProvider.executeSync {
+            serveWorker()
         }
 
     }

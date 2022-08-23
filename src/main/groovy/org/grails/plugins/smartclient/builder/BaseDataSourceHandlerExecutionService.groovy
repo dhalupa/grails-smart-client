@@ -3,6 +3,7 @@ package org.grails.plugins.smartclient.builder
 import groovy.util.logging.Slf4j
 import org.apache.commons.lang3.StringUtils
 import org.grails.plugins.smartclient.annotation.Remote
+import org.grails.plugins.smartclient.runner.LongOperationContextProvider
 import org.springframework.aop.framework.AopProxyUtils
 import org.springframework.util.ReflectionUtils
 
@@ -15,26 +16,19 @@ import java.lang.reflect.Method
 abstract class BaseDataSourceHandlerExecutionService {
     def grailsApplication
     def messageSource
-    /**
-     * Executes batch of operations in a single transaction
-     * @param transaction
-     * @return
-     */
-    def executeTransaction(transaction) {
+    LongOperationContextProvider longOperationContextProvider
+
+    Closure transactionWorker = { transaction ->
         def model = []
         transaction.operations.each { request ->
-            def resp = executeOperation(null, request)
+            def resp = operationWorker.call(null, request)
             resp.response.queueStatus = 0
             model << resp
         }
         model
     }
-    /**
-     * Executes batch single operation
-     * @param transaction
-     * @return
-     */
-    def executeOperation(dsID, request) {
+
+    Closure operationWorker = { dsID, request ->
         def retValue
         def dsName = dsID != null ? dsID : request.dataSource
         if (dsName.endsWith('Service')) {
@@ -57,6 +51,31 @@ abstract class BaseDataSourceHandlerExecutionService {
             }
         }
         retValue
+    }
+    /**
+     * Executes batch of operations in a single transaction
+     * @param transaction
+     * @return
+     */
+    def executeTransaction(transaction) {
+        Closure curriedWorker = transactionWorker.curry(transaction)
+        def result = longOperationContextProvider.executeSync {
+            curriedWorker.call()
+        }
+        result
+    }
+    /**
+     * Executes batch single operation
+     * @param transaction
+     * @return
+     */
+    def executeOperation(dsID, request) {
+        Closure curriedWorker = operationWorker.curry(dsID, request)
+        def result = longOperationContextProvider.executeSync {
+            curriedWorker.call()
+        }
+        result
+
     }
 
 
