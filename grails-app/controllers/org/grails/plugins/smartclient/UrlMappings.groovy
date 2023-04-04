@@ -1,6 +1,6 @@
 package org.grails.plugins.smartclient
 
-class SmartUrlMappings {
+class UrlMappings {
 
     static mappings = {
         "/datasource/definitions"(controller:"smartClientDatasource",action:"definitions")

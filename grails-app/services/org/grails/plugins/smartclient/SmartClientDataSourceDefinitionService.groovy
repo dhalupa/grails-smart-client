@@ -2,13 +2,14 @@ package org.grails.plugins.smartclient
 
 import grails.converters.JSON
 import grails.core.GrailsApplication
-import grails.core.GrailsDomainClass
-import grails.core.GrailsDomainClassProperty
 import grails.core.GrailsServiceClass
 import grails.util.GrailsClassUtils
 import groovy.text.SimpleTemplateEngine
-import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.core.artefact.ServiceArtefactHandler
+import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.model.PersistentProperty
+import org.grails.datastore.mapping.model.types.Association
+import org.grails.datastore.mapping.model.types.Identity
 import org.grails.io.support.ClassPathResource
 import org.grails.plugins.smartclient.annotation.P
 import org.grails.plugins.smartclient.annotation.Progress
@@ -23,7 +24,6 @@ import java.beans.PropertyDescriptor
 import java.lang.annotation.Annotation
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
-import org.apache.commons.lang3.StringUtils
 
 /**
  * Service responsible to build definition of datasources and remote API from registered datasource artefacts
@@ -42,6 +42,7 @@ class SmartClientDataSourceDefinitionService {
 
     GrailsApplication grailsApplication
     MessageSource messageSource
+
 
     static def SYSTEM_PROPS = ['version', 'created']
     static def REMOTE_DEF = '''isc.defineClass('RemoteMethod').addClassProperties({
@@ -186,7 +187,7 @@ $functionName: function ($params , callback) { alert('${message}')}'''
         dsInfo.fields = buildFieldsDefinition(dsClass)
         dsInfo.progressInfo = buildProgressInfo(dsClass.getClazz(), lang, dsInfo.ID)
         dsInfo.operationBindings = buildOperationsDefinition(dsClass, dsInfo)
-    //    dsInfo.transformRequest = buildTransformRequest()
+        //    dsInfo.transformRequest = buildTransformRequest()
         dsInfo.jsonPrefix = this.jsonPrefix
         dsInfo.jsonSufix = this.jsonSuffix
         dsInfo
@@ -231,13 +232,14 @@ $functionName: function ($params , callback) { alert('${message}')}'''
     private def buildFieldsDefinition = { dsClass ->
         def fd = [:]
         Class clazz = dsClass.getClazz()
-        def included = GrailsClassUtils.getStaticPropertyValue(clazz, 'included') ?: []
-        def excluded = GrailsClassUtils.getStaticPropertyValue(clazz, 'excluded') ?: []
-        GrailsDomainClass domainClass = resolveDomainClass(dsClass)
-        if (domainClass) {
+        List included = GrailsClassUtils.getStaticPropertyValue(clazz, 'included') ?: []
+        List excluded = GrailsClassUtils.getStaticPropertyValue(clazz, 'excluded') ?: []
+        PersistentEntity entity = grailsApplication.mappingContext.getPersistentEntity(clazz.name)
+
+        if (entity) {
             if (included) {
                 included.each { i ->
-                    GrailsDomainClassProperty p = domainClass.getPropertyByName(i)
+                    PersistentProperty p = entity.getPropertyByName(i)
                     if (p) {
                         buildFieldDefinition(p, fd)
                     } else {
@@ -245,7 +247,7 @@ $functionName: function ($params , callback) { alert('${message}')}'''
                     }
                 }
             } else {
-                domainClass.properties.each { GrailsDomainClassProperty p ->
+                entity.persistentProperties.each { PersistentProperty p ->
                     if (!excluded.contains(p.name)) {
                         buildFieldDefinition(p, fd)
                     }
@@ -257,11 +259,11 @@ $functionName: function ($params , callback) { alert('${message}')}'''
         fd.collect { k, v -> v }
     }
 
-    private def buildFieldDefinition = { GrailsDomainClassProperty prop, Map fieldsDefinition ->
-        if (prop.persistent && !prop.association && prop.typePropertyName != 'object') {
+    private def buildFieldDefinition = { PersistentProperty prop, Map fieldsDefinition ->
+        if (!prop instanceof Association && prop.type != Object.class) {
             if (!SYSTEM_PROPS.contains(prop.name)) {
-                def defn = [name: prop.name]
-                if (prop.identity) {
+                Map defn = [name: prop.name]
+                if (prop instanceof Identity) {
                     defn << [hidden: true, primaryKey: true]
                 } else {
                     def title = resolveTitle(prop)
@@ -279,9 +281,9 @@ $functionName: function ($params , callback) { alert('${message}')}'''
         }
     }
 
-    private def resolveTitle = { prop ->
+    private def resolveTitle = { PersistentProperty prop ->
         try {
-            return messageSource.getMessage("smart.field.${prop.domainClass.logicalPropertyName}.${prop.name}.title".toString(), [] as Object[], null)
+            return messageSource.getMessage("smart.field.${prop.mapping.classMapping.entity.name}.${prop.name}.title".toString(), [] as Object[], null)
         } catch (NoSuchMessageException e) {
             return null
         }
@@ -289,10 +291,12 @@ $functionName: function ($params , callback) { alert('${message}')}'''
 
     private def resolveDomainClass = { dsClass ->
         Class clazz = dsClass.getClazz()
+
         String domainClassName = GrailsClassUtils.getStaticPropertyValue(clazz, 'domainClass')?.simpleName ?: dsClass.logicalPropertyName
-        GrailsDomainClass domainClass = grailsApplication.getArtefactByLogicalPropertyName(DomainClassArtefactHandler.TYPE, Introspector.decapitalize(domainClassName));
-        if (domainClass) {
-            return domainClass
+        PersistentEntity entity = grailsApplication.mappingContext.getPersistentEntity(domainClassName)
+//        GrailsDomainClass domainClass = grailsApplication.getArtefactByLogicalPropertyName(DomainClassArtefactHandler.TYPE, Introspector.decapitalize(domainClassName));
+        if (entity) {
+            return entity
         } else {
             return null
         }
@@ -316,8 +320,8 @@ $functionName: function ($params , callback) { alert('${message}')}'''
         }
     }
 
-    private def resolveType = { GrailsDomainClassProperty prop ->
-        def type = TYPE_MAPPING[prop.typePropertyName]
+    private def resolveType = { PersistentProperty prop ->
+        def type = TYPE_MAPPING[prop.name]
         if (type) {
             return type
         } else {
