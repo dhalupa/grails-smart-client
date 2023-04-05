@@ -118,11 +118,11 @@ $functionName: function ($params , callback) { alert('${message}')}'''
     }
 
     def getJsonPrefix() {
-        return grailsApplication.config.grails.plugin.smartclient.debug ? '' : jsonPrefixString
+        return grailsApplication.config.getProperty('grails.plugin.smartclient.debug', Boolean) ? '' : jsonPrefixString
     }
 
     def getJsonSuffix() {
-        return grailsApplication.config.grails.plugin.smartclient.debug ? '' : jsonSuffixString
+        return grailsApplication.config.getProperty('grails.plugin.smartclient.debug', Boolean) ? '' : jsonSuffixString
     }
 
 

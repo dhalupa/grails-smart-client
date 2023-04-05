@@ -24,7 +24,7 @@ class SmartClientDatasourceController {
         } else {
             model = resolveService(params.dsID, request.JSON).executeOperation(params.dsID, request.JSON)
         }
-        def converterConfig = grailsApplication.config.grails.plugin.smartclient.converterConfig
+        def converterConfig = grailsApplication.config.getProperty('grails.plugin.smartclient.converterConfig')
         def jsonPrefix = smartClientDataSourceDefinitionService.jsonPrefix
         def jsonSufix = smartClientDataSourceDefinitionService.jsonSuffix
         try {
@@ -39,7 +39,7 @@ class SmartClientDatasourceController {
             builder.append(jsonSufix)
             render(text: builder.toString(), contentType: 'application/json')
         } finally {
-            def callback = grailsApplication.config.grails.plugin.smartclient.cleanupCallback
+            def callback = grailsApplication.config.get('grails.plugin.smartclient.cleanupCallback')
             if (callback) {
                 callback.call()
             }
