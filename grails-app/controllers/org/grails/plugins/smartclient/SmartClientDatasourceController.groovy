@@ -39,7 +39,7 @@ class SmartClientDatasourceController {
             builder.append(jsonSufix)
             render(text: builder.toString(), contentType: 'application/json')
         } finally {
-            def callback = grailsApplication.config.get('grails.plugin.smartclient.cleanupCallback')
+            def callback = grailsApplication.config.getProperty('grails.plugin.smartclient.cleanupCallback',Closure)
             if (callback) {
                 callback.call()
             }
