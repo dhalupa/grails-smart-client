@@ -1,7 +1,7 @@
 package org.grails.plugins.smartclient
 
 import grails.converters.JSON
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.plugins.smartclient.annotation.Operation
 import org.grails.plugins.smartclient.annotation.P
 import org.grails.plugins.smartclient.annotation.Remote
@@ -10,8 +10,8 @@ import spock.lang.Specification
 /**
  * See the API for {@link grails.test.mixin.web.ControllerUnitTestMixin} for usage instructions
  */
-@TestFor(RemoteMethodExecutorController)
-class RemoteMethodExecutorControllerSpec extends Specification {
+
+class RemoteMethodExecutorControllerSpec extends Specification implements ControllerUnitTest<RemoteMethodExecutorController>{
 
     def setup() {
         defineBeans {

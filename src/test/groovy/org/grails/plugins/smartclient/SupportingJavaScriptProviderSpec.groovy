@@ -1,22 +1,21 @@
 package org.grails.plugins.smartclient
 
-import grails.core.GrailsApplication
-import grails.test.mixin.TestMixin
-import grails.test.mixin.support.GrailsUnitTestMixin
+
 import org.grails.core.artefact.ServiceArtefactHandler
+import org.grails.testing.GrailsUnitTest
 import spock.lang.Specification
 
 /**
  * Created by dhalupa on 02.05.16..
  */
-@TestMixin(GrailsUnitTestMixin)
-class SupportingJavaScriptProviderSpec extends Specification {
+
+class SupportingJavaScriptProviderSpec extends Specification implements GrailsUnitTest {
 
     RemoteApiJavaScriptProvider provider
-    GrailsApplication grailsApplication
+
 
     def setup() {
-        grailsApplication = applicationContext.getBean(GrailsApplication)
+
         grailsApplication.registerArtefactHandler(new ServiceArtefactHandler())
         grailsApplication.addArtefact(ExposedInvoiceService)
         grailsApplication.addArtefact(InvoiceService)
