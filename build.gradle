@@ -12,10 +12,10 @@ buildscript {
 }
 
 
-//plugins {
-//    id "com.jfrog.artifactory" version "4.18.3"
-//    id 'maven-publish'
-//}
+plugins {
+    id "com.jfrog.artifactory" version "4.18.3"
+    id 'maven-publish'
+}
 
 
 version "0.7-SNAPSHOT"
@@ -118,29 +118,29 @@ assets {
 }
 
 
-//
-//publishing {
-//    publications {
-//        mavenJava(MavenPublication) {
-//            from components.java
-//        }
-//    }
-//}
-//
-//artifactory {
-//    contextUrl = 'https://artifactory.abz-reporting.com/artifactory'
-//    publish {
-//        repository {
-//            repoKey = version.contains('SNAPSHOT') ? 'plugins-snapshot-local' : 'plugins-release-local'
-//            username = "${abzLdapUser}"
-//            password = "${abzLdapPassword}"
-//        }
-//        defaults {
-//            publications('mavenJava')
-//        }
-//    }
-//
-//}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+artifactory {
+    contextUrl = 'https://artifactory.abz-reporting.com/artifactory'
+    publish {
+        repository {
+            repoKey = version.contains('SNAPSHOT') ? 'plugins-snapshot-local' : 'plugins-release-local'
+            username = "${abzLdapUser}"
+            password = "${abzLdapPassword}"
+        }
+        defaults {
+            publications('mavenJava')
+        }
+    }
+
+}
 
 
 

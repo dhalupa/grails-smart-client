@@ -58,7 +58,7 @@ class RemoteMethodExecutorControllerSpec extends Specification implements Contro
         def resp = JSON.parse(response.contentAsString)
         then:
         resp.response.status == -1
-        resp.response.data == 'No bean named \'invoiceServiceN\' is defined'
+        resp.response.data == 'No bean named \'invoiceServiceN\' available'
     }
 
     def "if service method does not exist error response should be returned"() {

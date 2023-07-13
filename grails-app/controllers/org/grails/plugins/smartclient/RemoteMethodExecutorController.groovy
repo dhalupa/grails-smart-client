@@ -26,7 +26,8 @@ class RemoteMethodExecutorController {
                 builder.append(new JSON(model).toString())
             })
         } else {
-            builder.append(smartClientConfigProvider.jsonSuffix)
+            builder.append(new JSON(model).toString())
+          //  builder.append(smartClientConfigProvider.jsonSuffix)
         }
         builder.append(smartClientConfigProvider.jsonSuffix)
         render(text: builder.toString(), contentType: 'application/json')
