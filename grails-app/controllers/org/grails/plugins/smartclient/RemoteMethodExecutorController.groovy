@@ -1,6 +1,8 @@
 package org.grails.plugins.smartclient
 
 import grails.converters.JSON
+import grails.gorm.multitenancy.CurrentTenant
+import grails.gorm.multitenancy.Tenants
 import groovy.util.logging.Slf4j
 import org.springframework.web.servlet.support.RequestContextUtils
 
@@ -9,7 +11,18 @@ class RemoteMethodExecutorController {
     def remoteMethodExecutor
     def smartClientConfigProvider
 
+
     def index() {
+        if (this.multiTenantMode) {
+            Tenants.withCurrent {
+                processIndexRequest()
+            }
+        } else {
+            processIndexRequest()
+        }
+    }
+
+    private def processIndexRequest() {
         def locale = RequestContextUtils.getLocale(request)
         def model
         def json = request.JSON
@@ -27,7 +40,7 @@ class RemoteMethodExecutorController {
             })
         } else {
             builder.append(new JSON(model).toString())
-          //  builder.append(smartClientConfigProvider.jsonSuffix)
+            //  builder.append(smartClientConfigProvider.jsonSuffix)
         }
         builder.append(smartClientConfigProvider.jsonSuffix)
         render(text: builder.toString(), contentType: 'application/json')
@@ -35,6 +48,10 @@ class RemoteMethodExecutorController {
 
     def init() {
         render(view: 'js', model: [jsonPrefix: smartClientConfigProvider.jsonPrefix, jsonSufix: smartClientConfigProvider.jsonSuffix], contentType: 'application/javascript')
+    }
+
+    private boolean isMultiTenantMode() {
+        return grailsApplication.config.getProperty('rf.multiTenancy.mode', Boolean, false)
     }
 
 

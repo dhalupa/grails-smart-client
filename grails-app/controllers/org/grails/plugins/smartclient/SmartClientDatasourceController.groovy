@@ -1,6 +1,7 @@
 package org.grails.plugins.smartclient
 
 import grails.converters.JSON
+import grails.gorm.multitenancy.CurrentTenant
 import grails.util.GrailsClassUtils
 import org.grails.plugins.smartclient.runner.LongOperationContextProvider
 
@@ -9,6 +10,7 @@ import org.grails.plugins.smartclient.runner.LongOperationContextProvider
  *
  * @author Denis Halupa
  */
+@CurrentTenant
 class SmartClientDatasourceController {
 
 
@@ -39,7 +41,7 @@ class SmartClientDatasourceController {
             builder.append(jsonSufix)
             render(text: builder.toString(), contentType: 'application/json')
         } finally {
-            def callback = grailsApplication.config.getProperty('grails.plugin.smartclient.cleanupCallback',Closure)
+            def callback = grailsApplication.config.getProperty('grails.plugin.smartclient.cleanupCallback', Closure)
             if (callback) {
                 callback.call()
             }
