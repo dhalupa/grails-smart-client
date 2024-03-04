@@ -4,6 +4,7 @@ import grails.converters.JSON
 import grails.gorm.multitenancy.CurrentTenant
 import grails.gorm.multitenancy.Tenants
 import groovy.util.logging.Slf4j
+import org.springframework.util.StopWatch
 import org.springframework.web.servlet.support.RequestContextUtils
 
 @Slf4j
@@ -23,10 +24,13 @@ class RemoteMethodExecutorController {
     }
 
     private def processIndexRequest() {
+        StopWatch watch = new StopWatch()
+        watch.start()
         def locale = RequestContextUtils.getLocale(request)
         def model
         def json = request.JSON
-        log.debug('Received remote method request {}', json)
+        String method = json?.data?.__method
+//        log.debug('Received remote method request {}', json)
         if (request.JSON.transaction) {
             model = remoteMethodExecutor.executeTransaction(json.transaction, locale)
         } else {
@@ -44,6 +48,15 @@ class RemoteMethodExecutorController {
         }
         builder.append(smartClientConfigProvider.jsonSuffix)
         render(text: builder.toString(), contentType: 'application/json')
+        if (log.debugEnabled && method && !method.startsWith('SystemService')) {
+
+
+            watch.stop()
+            log.debug('Method {} took {} seconds', method, watch.totalTimeSeconds)
+
+
+        }
+
     }
 
     def init() {
