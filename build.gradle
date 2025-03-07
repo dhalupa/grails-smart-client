@@ -67,9 +67,6 @@ dependencies {
 
 }
 
-application {
-    mainClass = "smart.client.Application"
-}
 
 java {
     sourceCompatibility = JavaVersion.toVersion("11")
