@@ -1,9 +1,9 @@
 package org.grails.plugins.smartclient
 
-import grails.converters.JSON
+
 import grails.core.GrailsServiceClass
 import groovy.text.SimpleTemplateEngine
-import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang3.StringUtils
 import org.grails.io.support.ClassPathResource
 import org.grails.plugins.smartclient.annotation.Operation
 import org.grails.plugins.smartclient.annotation.P

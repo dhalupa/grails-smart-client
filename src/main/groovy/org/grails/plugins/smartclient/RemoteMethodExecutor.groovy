@@ -1,8 +1,7 @@
 package org.grails.plugins.smartclient
 
-
 import groovy.util.logging.Slf4j
-import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang3.StringUtils
 import org.grails.plugins.smartclient.annotation.Operation
 import org.grails.plugins.smartclient.annotation.Remote
 import org.springframework.aop.framework.AopProxyUtils

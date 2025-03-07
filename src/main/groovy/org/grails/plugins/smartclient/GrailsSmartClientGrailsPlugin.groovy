@@ -3,15 +3,9 @@ package org.grails.plugins.smartclient
 import grails.converters.JSON
 import grails.core.ArtefactHandler
 import grails.core.GrailsClass
-import grails.plugins.*
-import org.apache.commons.lang.WordUtils
-import org.grails.plugins.smartclient.marshall.AsyncRemoteMethodResponseSmartJsonMarshaller
-import org.grails.plugins.smartclient.marshall.FetchResponseSmartJsonMarshaller
-import org.grails.plugins.smartclient.marshall.RawJavascript
-import org.grails.plugins.smartclient.marshall.RawJavascriptMarshaller
-import org.grails.plugins.smartclient.marshall.RemoteMethodResponseSmartJsonMarshaller
-import org.grails.plugins.smartclient.marshall.SmartJsonMarshaller
-import org.grails.plugins.smartclient.marshall.UpdateResponseSmartJsonMarshaller
+import grails.plugins.Plugin
+import org.apache.commons.lang3.StringUtils
+import org.grails.plugins.smartclient.marshall.*
 import org.springframework.beans.factory.config.CustomScopeConfigurer
 
 class GrailsSmartClientGrailsPlugin extends Plugin {
@@ -70,7 +64,7 @@ This plugin enables easy client server integration when SmartClient JS library i
             def marshallers = [AsyncRemoteMethodResponseSmartJsonMarshaller, FetchResponseSmartJsonMarshaller, RawJavascriptMarshaller,
                                RemoteMethodResponseSmartJsonMarshaller, UpdateResponseSmartJsonMarshaller]
             marshallers.each { clazz ->
-                "${WordUtils.uncapitalize(clazz.simpleName)}"(clazz) { bean ->
+                "${StringUtils.uncapitalize(clazz.simpleName)}"(clazz) { bean ->
                     bean.autowire = "byName"
                 }
             }
