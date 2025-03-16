@@ -6,6 +6,7 @@ import grails.core.GrailsClass
 import grails.plugins.Plugin
 import org.apache.commons.lang3.StringUtils
 import org.grails.plugins.smartclient.marshall.*
+import org.springframework.aop.scope.ScopedProxyFactoryBean
 import org.springframework.beans.factory.config.CustomScopeConfigurer
 
 class GrailsSmartClientGrailsPlugin extends Plugin {
@@ -39,13 +40,14 @@ This plugin enables easy client server integration when SmartClient JS library i
             csrfTokenHandlerBean(CsrfTokenHandler) { bean ->
                 bean.scope = 'session'
             }
-            csrfTokenHandler(org.springframework.aop.scope.ScopedProxyFactoryBean) {
+            csrfTokenHandler(ScopedProxyFactoryBean) {
                 targetBeanName = 'csrfTokenHandlerBean'
                 proxyTargetClass = true
             }
 
             remoteMethodExecutor(RemoteMethodExecutor) { bean ->
                 bean.autowire = 'byName'
+                bean.initMethod = 'init'
             }
             supportingJavaScriptProvider(RemoteApiJavaScriptProvider) { bean ->
                 bean.autowire = 'byName'

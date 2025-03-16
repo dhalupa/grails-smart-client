@@ -1,18 +1,28 @@
 package org.grails.plugins.smartclient
 
+import grails.core.GrailsApplication
 import groovy.util.logging.Slf4j
 import org.apache.commons.lang3.StringUtils
 import org.grails.plugins.smartclient.annotation.Operation
 import org.grails.plugins.smartclient.annotation.Remote
 import org.springframework.aop.framework.AopProxyUtils
+import org.springframework.context.MessageSource
+
+import java.lang.reflect.Method
 
 /**
  * Created by dhalupa on 29.04.16..
  */
 @Slf4j
 class RemoteMethodExecutor implements SmartClientResponseRenderer {
-    def grailsApplication
-    def messageSource
+    GrailsApplication grailsApplication
+    MessageSource messageSource
+    List<RemoteMethodInterceptor> interceptors
+
+
+    void init() {
+        this.interceptors = grailsApplication.mainContext.getBeansOfType(RemoteMethodInterceptor).values() as List
+    }
 
     /**
      * Executes batch of operations in a single transaction
@@ -37,12 +47,12 @@ class RemoteMethodExecutor implements SmartClientResponseRenderer {
     def execute(request, locale) {
         String conversationId = request.data.remove('__conversationId')
         ConversationScope.CURRENT_CONVERSATION.set(conversationId)
-        String[] methodLocator = StringUtils.split(request.data.remove('__method'), '.')
+        String[] methodLocator = StringUtils.split(request.data.remove('__method') as String, '.')
         String serviceName = StringUtils.uncapitalize(methodLocator[0])
         String methodName = methodLocator[1]
         def retValue
         try {
-            retValue = remoteMethodHandler.call(serviceName, methodName, request, locale)
+            retValue = remoteMethodHandler.call(serviceName, methodName, request, locale, interceptors)
         } catch (Throwable t) {
             log.error(t.message, t)
             retValue = renderErrorResponse(t.message)
@@ -51,13 +61,13 @@ class RemoteMethodExecutor implements SmartClientResponseRenderer {
     }
 
 
-    private remoteMethodHandler = { serviceName, methodName, request, locale ->
+    private remoteMethodHandler = { String serviceName, String methodName, request, locale, List<RemoteMethodInterceptor> interceptors ->
         def data = request.data
         def service = grailsApplication.mainContext.getBean(serviceName)
         def methods = service.metaClass.methods.findAll { it.name == methodName }
         Class clazz = AopProxyUtils.ultimateTargetClass(service)
         if (methods.size() == 1) {
-            def m = methods[0].cachedMethod
+            Method m = methods[0].cachedMethod
             def operation = m.getAnnotation(Remote)?.value() ?: Operation.CUSTOM
             if (m.getAnnotation(Remote) || clazz.getAnnotation(Remote)) {
                 switch (operation) {
@@ -71,6 +81,7 @@ class RemoteMethodExecutor implements SmartClientResponseRenderer {
                             }
                         }
                 }
+                interceptors.each { it.before(m) }
                 def value = service.invokeMethod(methodName, data)
                 def raw = m.getAnnotation(Remote)?.raw() ?: false
                 if (!raw) {
