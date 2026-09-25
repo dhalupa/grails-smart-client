@@ -4,7 +4,7 @@ import org.springframework.mock.web.MockHttpServletResponse
 import spock.lang.Shared
 import spock.lang.Specification
 
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 /**
  *

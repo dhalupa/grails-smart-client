@@ -1,96 +1,68 @@
 buildscript {
     repositories {
-        maven { url "https://repo.grails.org/grails/core" }
         mavenCentral()
+        maven { url = 'https://repo.grails.org/grails/restricted' }
+        // Grails 8.0.0-RC1 is only in the Apache staging repository
+        maven { url = 'https://repository.apache.org/content/groups/staging' }
     }
     dependencies { // Not Published to Gradle Plugin Portal
-        classpath "org.grails:grails-gradle-plugin:6.2.4"
-        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:5.0.0"
-        classpath group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '4.9.3'
+        classpath platform("org.apache.grails:grails-bom:$grailsVersion")
+        classpath "org.apache.grails:grails-gradle-plugins"
     }
 }
 
 plugins {
-    id "groovy"
-    id "war"
+    id "maven-publish"
     id "idea"
-    id "application"
     id "eclipse"
-    id("com.jfrog.artifactory") version "5.2.5"
-    id 'maven-publish'
-
 }
 
-// Not Published to Gradle Plugin Portal
-apply plugin: "org.grails.grails-plugin"
-apply plugin: "asset-pipeline"
+apply plugin: "org.apache.grails.gradle.grails-plugin"
+apply plugin: "org.apache.grails.gradle.grails-gsp"
 
 group = "org.grails.plugins"
-version "0.9.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    maven { url "https://repo.grails.org/grails/core/" }
-}
-
-configurations {
-    all {
-    }
+    maven { url = 'https://repo.grails.org/grails/restricted' }
+    maven { url = 'https://repository.apache.org/content/groups/staging' }
 }
 
 dependencies {
-    profile "org.grails.profiles:plugin"
-    implementation "org.grails:grails-core"
-    implementation "org.grails:grails-logging"
-    implementation "org.grails:grails-plugin-databinding"
-    implementation "org.grails:grails-plugin-i18n"
-    implementation "org.grails:grails-plugin-interceptors"
-    implementation "org.grails:grails-plugin-rest"
-    implementation "org.grails:grails-plugin-services"
-    implementation "org.grails:grails-plugin-url-mappings"
-    implementation "org.grails:grails-web-boot"
+    profile "org.apache.grails.profiles:plugin"
+    implementation platform("org.apache.grails:grails-bom:$grailsVersion")
+    implementation "org.apache.grails:grails-core"
+    implementation "org.apache.grails:grails-logging"
+    implementation "org.apache.grails:grails-databinding"
+    implementation "org.apache.grails:grails-interceptors"
+    implementation "org.apache.grails:grails-rest-transforms"
+    implementation "org.apache.grails:grails-converters"
+    implementation "org.apache.grails:grails-services"
+    implementation "org.apache.grails:grails-url-mappings"
+    implementation "org.apache.grails:grails-web-boot"
+    implementation "org.apache.grails:grails-gsp"
+    implementation "org.apache.grails:grails-data-hibernate5"
     implementation "org.springframework.boot:spring-boot-autoconfigure"
     implementation "org.springframework.boot:spring-boot-starter-logging"
     implementation "org.springframework.boot:spring-boot-starter-validation"
-    compileOnly "io.micronaut:micronaut-inject-groovy"
-    console "org.grails:grails-console"
-    runtimeOnly "com.h2database:h2"
-    runtimeOnly "org.apache.tomcat:tomcat-jdbc"
-    runtimeOnly "com.bertramlabs.plugins:asset-pipeline-grails:4.5.1"
-    testImplementation "io.micronaut:micronaut-inject-groovy"
-    testImplementation "org.grails:grails-gorm-testing-support"
-    testImplementation "org.grails:grails-web-testing-support"
+    implementation "org.apache.commons:commons-lang3:3.17.0"
+    implementation "org.codehaus.gpars:gpars:1.2.1"
+    testImplementation "org.apache.grails:grails-testing-support-datamapping"
+    testImplementation "org.apache.grails:grails-testing-support-web"
     testImplementation "org.spockframework:spock-core"
     testImplementation "org.mockito:mockito-core"
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.17.0'
-    implementation 'org.codehaus.gpars:gpars:1.2.1'
-
 }
 
+compileJava.options.release = 21
 
-java {
-    sourceCompatibility = JavaVersion.toVersion("11")
-}
-tasks.withType(Jar) {
-
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-tasks.withType(Test) {
+tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }
 
-bootJar.enabled = false
-
-
-assets {
-    packagePlugin = true
-}
-
-task sourceJar(type: Jar) {
-    classifier 'sources'
+tasks.register('sourceJar', Jar) {
+    archiveClassifier.set('sources')
     from sourceSets.main.allJava
 }
-
 
 publishing {
     publications {
@@ -99,19 +71,16 @@ publishing {
             artifact tasks.sourceJar
         }
     }
-}
-
-artifactory {
-    contextUrl = 'https://artifactory.abz-reporting.com/artifactory'
-    publish {
-        repository {
-            repoKey = version.contains('SNAPSHOT') ? 'plugins-snapshot-local' : 'plugins-release-local'
-            username = "${abzLdapUser}"
-            password = "${abzLdapPassword}"
-        }
-        defaults {
-            publications('mavenJava')
+    repositories {
+        maven {
+            name = 'abz'
+            url = version.endsWith('SNAPSHOT') ?
+                    'https://artifactory.abz-reporting.com/artifactory/plugins-snapshot-local' :
+                    'https://artifactory.abz-reporting.com/artifactory/plugins-release-local'
+            credentials {
+                username = findProperty('abzLdapUser')
+                password = findProperty('abzLdapPassword')
+            }
         }
     }
-
 }

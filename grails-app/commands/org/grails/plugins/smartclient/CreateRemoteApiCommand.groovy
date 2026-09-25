@@ -1,7 +1,7 @@
 package org.grails.plugins.smartclient
 
 
-import grails.dev.commands.GrailsApplicationCommand
+import org.apache.grails.core.cli.GrailsApplicationCommand
 import groovy.transform.CompileStatic
 import org.grails.io.support.ClassPathResource
 import org.springframework.beans.factory.annotation.Autowired
