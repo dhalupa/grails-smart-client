@@ -11,6 +11,8 @@ import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.DefaultTransactionDefinition
 
+import java.util.concurrent.ConcurrentHashMap
+
 /**
  * Component which is responsible to execute long running operations in the background
  * @author Denis Halupa
@@ -26,7 +28,11 @@ class LongOperationsRunner {
 
     ThreadLocal<String> uuidHolder = new ThreadLocal<String>()
 
-    Map statusMap = [:]
+    /**
+     * The status of each running operation, by uuid. Requests add and remove entries in different
+     * threads, so the map is concurrent. It does not accept a null key: callers check the uuid first.
+     */
+    Map<String, AsyncRemoteMethodResponse> statusMap = new ConcurrentHashMap<>()
 
     /**
      * Executes a long running operation
@@ -37,7 +43,7 @@ class LongOperationsRunner {
     def execute(Map config, Closure operation) {
         String uuid = UUID.randomUUID().toString()
         longOperationContextProvider.updateContextMap(config)
-        statusMap[uuid] = new AsyncRemoteMethodResponse(config)
+        statusMap[uuid] = new AsyncRemoteMethodResponse(Collections.synchronizedMap(new LinkedHashMap(config)))
         if (async) {
             Dataflow.task {
                 longOperationContextProvider.storeThreadLocalData(config)
@@ -63,22 +69,20 @@ class LongOperationsRunner {
 
 
     AsyncRemoteMethodResponse getStatus() {
-        String uuid = uuidHolder.get()
-        def s = statusMap[uuid]
+        def s = getStatus(uuidHolder.get())
         return s ?: new AsyncRemoteMethodResponse()
     }
 
     def getStatus(String uuid) {
-        statusMap[uuid]
+        uuid != null ? statusMap[uuid] : null
     }
 
     def removeStatus(String uuid) {
-        statusMap.remove(uuid)
+        uuid != null ? statusMap.remove(uuid) : null
     }
 
     def removeStatus() {
-        String uuid = uuidHolder.get()
-        statusMap.remove(uuid)
+        removeStatus(uuidHolder.get())
     }
 
     private def syncWorker = { String uuid, Closure operation ->
